@@ -31,7 +31,6 @@ async def lifespan(app: FastAPI):
     init_db()
     yield
 
-# pass
 
 app = FastAPI(lifespan=lifespan)
 # app.include_router(auth_router)
