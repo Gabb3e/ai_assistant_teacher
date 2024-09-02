@@ -12,6 +12,7 @@ import KnowledgeLevel from './KnowledgeLevel';
 import QuestionPage from './QuestionPage';
 import QuizResults from './QuizResults';
 import Login from './Login';
+import Register from './Register';
 
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
         <Route path="/QuestionPage" element={<QuestionPage />} />
         <Route path="/QuizResults" element={<QuizResults />} />
         <Route path="/Login" element={<Login />} />
+        <Route path="/Register" element={<Register />} />
       </Routes>
     </Router>
   );
