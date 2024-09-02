@@ -8,6 +8,7 @@ import Onb4 from './Onb4';
 import Dashboard from './Dashboard';
 import TopicSelection from './TopicSelection';
 import QuestionCount from './QuestionCount';
+import KnowledgeLevel from './KnowledgeLevel';
 
 function App() {
   return (
@@ -21,6 +22,8 @@ function App() {
         <Route path="/TopicSelection" element={<TopicSelection />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/QuestionCount" element={<QuestionCount />} />
+        <Route path="/KnowledgeLevel" element={<KnowledgeLevel />} />
+
       </Routes>
     </Router>
   );
