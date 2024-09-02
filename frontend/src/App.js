@@ -9,6 +9,7 @@ import Dashboard from './Dashboard';
 import TopicSelection from './TopicSelection';
 import QuestionCount from './QuestionCount';
 import KnowledgeLevel from './KnowledgeLevel';
+import QuestionPage from './QuestionPage';
 
 function App() {
   return (
@@ -23,7 +24,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/QuestionCount" element={<QuestionCount />} />
         <Route path="/KnowledgeLevel" element={<KnowledgeLevel />} />
-
+        <Route path="/QuestionPage" element={<QuestionPage />} />
       </Routes>
     </Router>
   );
