@@ -7,6 +7,7 @@ import Onb3 from './Onb3';
 import Onb4 from './Onb4';
 import Dashboard from './Dashboard';
 import TopicSelection from './TopicSelection';
+import QuestionCount from './QuestionCount';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/onb4" element={<Onb4 />} />
         <Route path="/TopicSelection" element={<TopicSelection />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/QuestionCount" element={<QuestionCount />} />
       </Routes>
     </Router>
   );
