@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Navbar from './AppNavbar';
 
 const TopicSelection = () => {
   const navigate = useNavigate();
@@ -31,6 +32,7 @@ const TopicSelection = () => {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-white">
+      <Navbar />
       <h1 className="text-4xl font-bold text-black mb-8">Study Assistant</h1>
       <div className="w-full max-w-2xl mx-auto">
         <div className="mb-8">

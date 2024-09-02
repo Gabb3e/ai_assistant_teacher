@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import AppNavbar from './AppNavbar';
 
 const KnowledgeLevel = () => {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ const KnowledgeLevel = () => {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-white">
+       <AppNavbar />
       <h1 className="text-4xl font-bold text-black mb-8">Study Assistant</h1>
       <div className="w-full max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-8">

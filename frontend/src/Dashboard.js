@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import AppNavbar from './AppNavbar'; 
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -10,6 +11,7 @@ const Dashboard = () => {
 
   return (
     <div className="p-8 bg-gray-100 min-h-screen">
+       <AppNavbar />
       <h2 className="text-4xl font-bold text-gray-900 mb-8">Dashboard</h2>
       <p className="text-lg text-gray-600 mb-12">
         Welcome back! Here’s a quick overview of your progress.

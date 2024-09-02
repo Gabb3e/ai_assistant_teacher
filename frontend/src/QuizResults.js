@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import AppNavbar from './AppNavbar';
 
 const QuizResults = () => {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ const QuizResults = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-white">
+       <AppNavbar />
       <h1 className="text-4xl font-bold text-black mb-8">Quiz Results</h1>
       <div className="w-full max-w-3xl mx-auto">
         {/* Summary Section */}
