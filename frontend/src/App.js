@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';  // Import these correctly
 import Hero from './Hero';
 import Onb1 from './Onb1';
 import Onb2 from './Onb2';
@@ -10,9 +10,6 @@ import Dashboard from './Dashboard';
 function App() {
   return (
     <Router>
-      <div className="bg-blue-500 text-white p-4">
-        <h1 className="text-2xl font-bold">Hello, Tailwind CSS!</h1>
-      </div>
       <Routes>
         <Route path="/" element={<Hero />} />
         <Route path="/onb1" element={<Onb1 />} />
