@@ -13,6 +13,8 @@ import QuestionPage from './QuestionPage';
 import QuizResults from './QuizResults';
 import Login from './Login';
 import Register from './Register';
+import Navbar from './Navbar';
+
 
 
 function App() {
@@ -32,6 +34,7 @@ function App() {
         <Route path="/QuizResults" element={<QuizResults />} />
         <Route path="/Login" element={<Login />} />
         <Route path="/Register" element={<Register />} />
+        <Route path="/Nav" element={<Register />} />
       </Routes>
     </Router>
   );

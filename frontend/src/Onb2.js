@@ -1,6 +1,13 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Onb2 = () => {
+  const navigate = useNavigate();
+
+  const handleNext = () => {
+    navigate('/onb3');
+  };
+
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-white">
       <h1 className="text-4xl font-bold text-black mb-8">Study Assistant</h1>
@@ -30,7 +37,12 @@ const Onb2 = () => {
         </div>
         <div className="flex justify-between">
           <button className="text-gray-500">Back</button>
-          <button className="bg-blue-600 text-white py-2 px-6 rounded-lg">Continue →</button>
+          <button 
+            className="bg-blue-600 text-white py-2 px-6 rounded-lg"
+            onClick={handleNext}
+          >
+            Continue →
+          </button>
         </div>
       </div>
     </div>

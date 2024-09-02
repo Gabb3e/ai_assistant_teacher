@@ -1,17 +1,22 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Onb3 = () => {
+  const navigate = useNavigate();
+
+  const handleNext = () => {
+    navigate('/onb4');
+  };
+
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-white">
       <h1 className="text-4xl font-bold text-black mb-8">Study Assistant</h1>
       <div className="w-full max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <span className="text-gray-600">Step: 2 of 4</span>
+          <span className="text-gray-600">Step: 3 of 4</span>
           <div className="flex space-x-2 w-full ml-4">
-            <div className="h-1 bg-blue-600 rounded-full w-1/3"></div>
-            <div className="h-1 bg-blue-600 rounded-full w-1/3"></div>
-            <div className="h-1 bg-gray-300 rounded-full w-1/3"></div>
-            <div className="h-1 bg-gray-300 rounded-full w-1/3"></div>
+            <div className="h-1 bg-blue-600 rounded-full w-1/2"></div>
+            <div className="h-1 bg-gray-300 rounded-full w-1/2"></div>
           </div>
         </div>
         <div className="text-center mb-8">
@@ -20,7 +25,7 @@ const Onb3 = () => {
         </div>
         <div className="flex justify-center mb-8">
           <select className="border border-gray-300 p-4 rounded-lg text-black">
-            <option>1 days / Week</option>
+            <option>1 day / Week</option>
             <option>2 days / Week</option>
             <option>3 days / Week</option>
             <option>4 days / Week</option>
@@ -31,7 +36,12 @@ const Onb3 = () => {
         </div>
         <div className="flex justify-between">
           <button className="text-gray-500">Back</button>
-          <button className="bg-blue-600 text-white py-2 px-6 rounded-lg">Continue →</button>
+          <button 
+            className="bg-blue-600 text-white py-2 px-6 rounded-lg"
+            onClick={handleNext}
+          >
+            Continue →
+          </button>
         </div>
       </div>
     </div>
