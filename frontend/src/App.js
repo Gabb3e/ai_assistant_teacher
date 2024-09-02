@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';  // Import these correctly
-import Hero from './Hero';
+import LandingPage from './LandingPage';
 import Onb1 from './Onb1';
 import Onb2 from './Onb2';
 import Onb3 from './Onb3';
@@ -10,12 +10,13 @@ import TopicSelection from './TopicSelection';
 import QuestionCount from './QuestionCount';
 import KnowledgeLevel from './KnowledgeLevel';
 import QuestionPage from './QuestionPage';
+import QuizResults from './QuizResults';
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Hero />} />
+        <Route path="/" element={<LandingPage />} />
         <Route path="/onb1" element={<Onb1 />} />
         <Route path="/onb2" element={<Onb2 />} />
         <Route path="/onb3" element={<Onb3 />} />
@@ -25,6 +26,7 @@ function App() {
         <Route path="/QuestionCount" element={<QuestionCount />} />
         <Route path="/KnowledgeLevel" element={<KnowledgeLevel />} />
         <Route path="/QuestionPage" element={<QuestionPage />} />
+        <Route path="/QuizResults" element={<QuizResults />} />
       </Routes>
     </Router>
   );
