@@ -9,7 +9,7 @@ from database.models import ChatRequest, ChatResponse, QuizModel, QuizQuestionMo
 from database.schemas import ChatRequestModel, ChatResponseModel, QuizCreateResponseModel, QuizCreateRequestModel, QuestionModel
 from openai import OpenAI
 import httpx
-from typing import List, Dict
+from typing import List, Dict, Any
 from uuid import uuid4
 import os
 import re
@@ -31,34 +31,69 @@ def load_api_key() -> str:
         )
     return api_key
 
-def parse_quiz_response(ai_response: str) -> List[Dict[str, any]]:
-    # Splitting response into individual questions
-    question_blocks = re.split(r'\d+\.\s*Question:', ai_response.strip())
+def parse_quiz_response(ai_response: str) -> List[Dict[str, Any]]:
+    # Split response into blocks of questions using regex for "Question" pattern.
+    question_blocks = re.split(r'\*\*Question\s*\d+:\*\*', ai_response.strip())
 
     questions = []
 
-    for block in question_blocks:
-        if block.strip():  # Check if the block is not empty
-            question_dict = {}
+    # Loop over each block, skipping the introductory block (block 0)
+    for idx, block in enumerate(question_blocks):
+        block = block.strip()  # Remove extra whitespace
 
-            # Extract question text
-            question_match = re.search(r'(.+?)\s*Options:', block, re.S)
-            if question_match:
-                question_dict['question'] = question_match.group(1).strip()
+        # Skip the introductory or any non-question blocks
+        if idx == 0 or not block:
+            continue
 
-            # Extract options
-            options_match = re.findall(r'[a-d]\)\s*(.+)', block)
-            if options_match:
-                question_dict['options'] = [option.strip() for option in options_match]
+        question_dict = {}
+        print(f"Processing block {idx}: {block}")  # Debugging line to inspect each block
 
-            # Extract correct answer
-            answer_match = re.search(r'Answer:\s*([a-d])', block)
-            if answer_match:
-                correct_option = answer_match.group(1).strip()
-                correct_index = ['a', 'b', 'c', 'd'].index(correct_option)
-                question_dict['correct_answer'] = question_dict['options'][correct_index]
+        # Try to extract question text by looking for options (e.g., "a)")
+        question_match = re.search(r'(.+?)\nA\)', block, re.S)
+        if question_match:
+            question_dict['question'] = question_match.group(1).strip()
+        else:
+            # Log or raise an error if the question text cannot be found
+            raise ValueError(f"Question text not found in block {idx}: {block}")
 
-            questions.append(question_dict)
+        # Extract options (a) to d), supporting both lowercase and uppercase letters
+        options_match = re.findall(r'[A-D]\)\s*(.+)', block)
+        if options_match:
+            question_dict['options'] = [option.strip() for option in options_match]
+        else:
+            # If no options are found, raise an error
+            raise ValueError(f"Options not found for question {idx}: {question_dict.get('question', 'Unknown')}")
+
+        questions.append(question_dict)
+
+    # Print the full response for debugging purposes
+    print(f"Full AI Response: {ai_response}")  # This will print the AI response for inspection
+
+    # Extract the answers key from the response
+    answer_key_match = re.search(r'(### Answers|Answers Key|Answers):\n(.*)', ai_response, re.S)
+    if answer_key_match:
+        answer_key_block = answer_key_match.group(2).strip()
+
+        # Debugging: Print the extracted answer key
+        print(f"Extracted Answer Key Block: {answer_key_block}")
+
+        # Extract each answer using regex for "number) Answer"
+        answer_matches = re.findall(r'(\d+)\.\s*([A-Da-d])\s*[\)]?', answer_key_block)
+        if answer_matches:
+            for idx, (question_num, correct_option) in enumerate(answer_matches):
+                correct_index = ['a', 'b', 'c', 'd', 'A', 'B', 'C', 'D'].index(correct_option)
+                correct_index = correct_index % 4  # Normalize to 0-3 for lowercase and uppercase
+                # Assign the correct answer to the corresponding question
+                if idx < len(questions):
+                    questions[idx]['correct_answer'] = questions[idx]['options'][correct_index]
+                else:
+                    raise ValueError(f"Answer provided for question {idx+1} that does not exist.")
+        else:
+            raise ValueError("No valid answers found in the answer key.")
+    else:
+        # Print AI response for further investigation
+        print(f"AI Response when searching for answer key: {ai_response}")
+        raise ValueError("Answer key not found in the AI response.")
 
     return questions
 
@@ -156,7 +191,14 @@ async def create_quiz(
         # Here, you would typically parse `ai_response` to extract questions and options
         # Assuming `ai_response` is structured correctly as a JSON-like response:
         questions = parse_quiz_response(ai_response)  # You need to define this function
+        print(questions)
 
+        # Check if questions are parsed correctly
+        if not questions or not isinstance(questions, list):
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to parse quiz questions."
+            )
          # Save the generated quiz to the database
         db_quiz = QuizModel(topic=request.topic, num_questions=request.num_questions, difficulty=request.difficulty)
         db.add(db_quiz)
@@ -164,6 +206,11 @@ async def create_quiz(
         db.refresh(db_quiz)
 
         for q in questions:
+            if 'question' not in q or 'options' not in q or 'correct_answer' not in q:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Malformed question data."
+                )
             db_question = QuizQuestionModel(
                 quiz_id=db_quiz.id,
                 question=q['question'],
@@ -178,7 +225,6 @@ async def create_quiz(
             quiz_id=db_quiz.id,
             questions=[QuestionModel(**q) for q in questions]
         )
-
 
         return response
 
