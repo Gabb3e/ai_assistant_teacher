@@ -1,12 +1,12 @@
 from fastapi import FastAPI, HTTPException, Depends, status, Request, Query
-from app.db_setup import init_db, get_db
+from db_setup import init_db, get_db
 from contextlib import asynccontextmanager
 from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy import select, update, delete, insert
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Annotated
-from app.database.models import ChatRequest, ChatResponse, QuizModel, QuizQuestionModel
-from app.database.schemas import ChatRequestModel, ChatResponseModel, QuizCreateResponseModel, QuizCreateRequestModel, QuestionModel
+from database.models import ChatRequest, ChatResponse, QuizModel, QuizQuestionModel
+from database.schemas import ChatRequestModel, ChatResponseModel, QuizCreateResponseModel, QuizCreateRequestModel, QuestionModel
 from openai import OpenAI
 import httpx
 from typing import List, Dict
@@ -64,8 +64,8 @@ def parse_quiz_response(ai_response: str) -> List[Dict[str, any]]:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    init_db()
-    yield
+   await init_db()
+   yield
 
 
 app = FastAPI(lifespan=lifespan)
@@ -250,3 +250,20 @@ async def chat_history(session_id: str):
         )
 
     return {"session_id": session_id, "history": conversations[session_id]}
+
+@app.get("/listings", status_code=200, tags=["listing"])
+def list_listings(db: Session = Depends(get_db)):
+        pass
+#     """
+#     This lists all listingss, we get an array of the listings
+#     """
+#     listings = db.scalars(select(Listings).options(
+#         selectinload(Listings.property),
+#         selectinload(Listings.renter),
+#         selectinload(Listings.admin_user),
+#         selectinload(Listings.neighborhood),
+#         selectinload(Listings.img),
+#         selectinload(Listings.weeks),
+#         selectinload(Listings.notes)
+#     )
+# ).all()
