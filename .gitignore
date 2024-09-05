@@ -1,4 +1,15 @@
+
+node_modules
+
+venv
+
+TODO.txt
+
+ignore_this.txt
+
 .env
 .pyc
 *.pyc
 __pycache__/
+
+versions
