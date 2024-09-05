@@ -1,9 +1,9 @@
-from pydantic import BaseModel, EmailStr, Field, ConfigDict, constr
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from typing import Optional, List
 from datetime import datetime
-from enum import Enum
 
-# User Models
+
+# User Schemas
 class UserBase(BaseModel):
     email: EmailStr
     first_name: str
@@ -22,7 +22,7 @@ class User(UserBase):
     model_config = ConfigDict(from_attributes=True)
 
 
-# Subject Models
+# Subject Schemas
 class SubjectBase(BaseModel):
     name: str
     description: Optional[str] = None
@@ -32,11 +32,10 @@ class SubjectCreate(SubjectBase):
 
 class Subject(SubjectBase):
     subject_id: int
-
     model_config = ConfigDict(from_attributes=True)
 
 
-# Test Models
+# Test Schemas
 class TestBase(BaseModel):
     subject_id: int
     name: str
@@ -49,11 +48,10 @@ class TestCreate(TestBase):
 class Test(TestBase):
     test_id: int
     created_at: datetime
-
     model_config = ConfigDict(from_attributes=True)
 
 
-# Question Models
+# Question Schemas
 class QuestionBase(BaseModel):
     test_id: int
     question_text: str
@@ -65,11 +63,10 @@ class QuestionCreate(QuestionBase):
 
 class Question(QuestionBase):
     question_id: int
-
     model_config = ConfigDict(from_attributes=True)
 
 
-# Question Option Models
+# Question Option Schemas
 class QuestionOptionBase(BaseModel):
     question_id: int
     option_text: str
@@ -80,11 +77,10 @@ class QuestionOptionCreate(QuestionOptionBase):
 
 class QuestionOption(QuestionOptionBase):
     option_id: int
-
     model_config = ConfigDict(from_attributes=True)
 
 
-# Test Attempt Models
+# Test Attempt Schemas
 class TestAttemptBase(BaseModel):
     user_id: int
     test_id: int
@@ -97,11 +93,10 @@ class TestAttemptCreate(TestAttemptBase):
 
 class TestAttempt(TestAttemptBase):
     attempt_id: int
-
     model_config = ConfigDict(from_attributes=True)
 
 
-# Submitted Answer Models
+# Submitted Answer Schemas
 class SubmittedAnswerBase(BaseModel):
     attempt_id: int
     question_id: int
@@ -113,23 +108,20 @@ class SubmittedAnswerCreate(SubmittedAnswerBase):
 
 class SubmittedAnswer(SubmittedAnswerBase):
     answer_id: int
-
     model_config = ConfigDict(from_attributes=True)
 
 
-# Chat Models
+# ChatRequest and ChatResponse Schemas
 class ChatRequestModel(BaseModel):
     user_input: str
 
 class ChatResponseModel(BaseModel):
     ai_response: str
 
-    class Config:
-        orm_mode = True  # Tells Pydantic to convert from SQLAlchemy model to Pydantic model
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
-# Quiz Models
+# Quiz Models for Request and Response
 class QuizCreateRequestModel(BaseModel):
     topic: str
     num_questions: int

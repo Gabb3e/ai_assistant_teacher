@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 import os
-from database.models import Base
+from app.models.models import Base
 from sqlalchemy.exc import OperationalError
 import asyncio
 import psycopg2

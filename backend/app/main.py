@@ -1,12 +1,12 @@
 from fastapi import FastAPI, HTTPException, Depends, status, Request, Query
-from db_setup import init_db, get_db
+from app.db_setup import init_db, get_db
 from contextlib import asynccontextmanager
 from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy import select, update, delete, insert
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Annotated
-from database.models import ChatRequest, ChatResponse, QuizModel, QuizQuestionModel
-from database.schemas import ChatRequestModel, ChatResponseModel, QuizCreateResponseModel, QuizCreateRequestModel, QuestionModel
+from app.models.models import ChatRequest, ChatResponse, QuizModel, QuizQuestionModel
+from app.schemas.schemas import ChatRequestModel, ChatResponseModel, QuizCreateResponseModel, QuizCreateRequestModel, QuestionModel
 from openai import OpenAI
 import httpx
 from typing import List, Dict, Any
@@ -49,7 +49,7 @@ def parse_quiz_response(ai_response: str) -> List[Dict[str, Any]]:
         print(f"Processing block {idx}: {block}")  # Debugging line to inspect each block
 
         # Try to extract question text by looking for options (e.g., "a)")
-        question_match = re.search(r'(.+?)\nA\)', block, re.S)
+        question_match = re.search(r'(.+?)\n[aA]\)', block, re.S)
         if question_match:
             question_dict['question'] = question_match.group(1).strip()
         else:
@@ -57,7 +57,7 @@ def parse_quiz_response(ai_response: str) -> List[Dict[str, Any]]:
             raise ValueError(f"Question text not found in block {idx}: {block}")
 
         # Extract options (a) to d), supporting both lowercase and uppercase letters
-        options_match = re.findall(r'[A-D]\)\s*(.+)', block)
+        options_match = re.findall(r'[a-dA-D]\)\s*(.+)', block)
         if options_match:
             question_dict['options'] = [option.strip() for option in options_match]
         else:
@@ -70,7 +70,7 @@ def parse_quiz_response(ai_response: str) -> List[Dict[str, Any]]:
     print(f"Full AI Response: {ai_response}")  # This will print the AI response for inspection
 
     # Extract the answers key from the response
-    answer_key_match = re.search(r'(### Answers|Answers Key|Answers):\n(.*)', ai_response, re.S)
+    answer_key_match = re.search(r'(### Answers|Answers Key|Answers)\s*[:\n](.+)', ai_response, re.S)
     if answer_key_match:
         answer_key_block = answer_key_match.group(2).strip()
 
@@ -78,7 +78,7 @@ def parse_quiz_response(ai_response: str) -> List[Dict[str, Any]]:
         print(f"Extracted Answer Key Block: {answer_key_block}")
 
         # Extract each answer using regex for "number) Answer"
-        answer_matches = re.findall(r'(\d+)\.\s*([A-Da-d])\s*[\)]?', answer_key_block)
+        answer_matches = re.findall(r'(\d+)\.\s*([A-Da-d])', answer_key_block)
         if answer_matches:
             for idx, (question_num, correct_option) in enumerate(answer_matches):
                 correct_index = ['a', 'b', 'c', 'd', 'A', 'B', 'C', 'D'].index(correct_option)
@@ -96,6 +96,7 @@ def parse_quiz_response(ai_response: str) -> List[Dict[str, Any]]:
         raise ValueError("Answer key not found in the AI response.")
 
     return questions
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
