@@ -1,8 +1,21 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import AppNavbar from './AppNavbar';
 
 const QuizResults = () => {
+  const navigate = useNavigate();
+
+  const handleRetakeQuiz = () => {
+    navigate('/QuestionPage'); // Navigate to the first question to retake the quiz
+  };
+
+  const handleDone = () => {
+    navigate('/dashboard'); // Navigate back to the dashboard
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-white">
+       <AppNavbar />
       <h1 className="text-4xl font-bold text-black mb-8">Quiz Results</h1>
       <div className="w-full max-w-3xl mx-auto">
         {/* Summary Section */}
@@ -40,8 +53,18 @@ const QuizResults = () => {
 
         {/* Action Buttons */}
         <div className="flex justify-between mt-8">
-          <button className="text-gray-500">Retake Quiz</button>
-          <button className="bg-blue-600 text-white py-2 px-6 rounded-lg">Review Answers →</button>
+          <button
+            onClick={handleRetakeQuiz}
+            className="text-gray-500"
+          >
+            Retake Quiz
+          </button>
+          <button
+            onClick={handleDone}
+            className="bg-blue-600 text-white py-2 px-6 rounded-lg"
+          >
+            Done
+          </button>
         </div>
       </div>
     </div>

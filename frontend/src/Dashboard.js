@@ -1,137 +1,220 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom'; 
+
+const Sidebar = () => {
+  return (
+    <aside className="bg-white p-8 min-h-screen shadow-lg">
+      <div className="mb-10">
+        <img
+          src="https://via.placeholder.com/150"
+          alt="User Avatar"
+          className="rounded-full w-20 h-20 mb-4"
+        />
+        <h3 className="text-xl font-bold">Mustafa Naji</h3>
+        <p className="text-sm text-gray-500">Mustafa@prospexs.ai</p>
+      </div>
+      <nav>
+        <ul>
+          <li className="mb-4">
+            <a href="/" className="text-lg font-semibold text-gray-700 hover:text-blue-600">
+              Home
+            </a>
+          </li>
+          <li className="mb-4">
+            <a href="/analytics" className="text-lg font-semibold text-gray-700 hover:text-blue-600">
+              Quizzes
+            </a>
+          </li>
+          <li className="mb-4">
+            <a href="/task-list" className="text-lg font-semibold text-gray-700 hover:text-blue-600">
+              Progress
+            </a>
+          </li>
+          <li className="mb-4">
+            <a href="/tracking" className="text-lg font-semibold text-gray-700 hover:text-blue-600">
+              Profile
+            </a>
+          </li>
+          <li className="mb-4">
+            <a href="/tracking" className="text-lg font-semibold text-gray-700 hover:text-blue-600">
+              Logout
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+  );
+};
 
 const Dashboard = () => {
+  const navigate = useNavigate(); // useNavigate hook for navigation
+
+  const startQuiz = (subject) => {
+    navigate(`/quiz/${subject}`);
+  };
+
+  const goToTopicSelection = () => {
+    navigate('/TopicSelection'); // Navigate to the TopicSelection page
+  };
+
   return (
-    <div className="p-8 bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 min-h-screen">
-      <h2 className="text-3xl font-semibold text-gray-800 mb-6">Dashboard Overview</h2>
-      <p className="text-gray-600 mb-12">
-        Welcome back! Here's a summary of your recent activities and progress.
-      </p>
+    <div className="flex bg-gray-100 min-h-screen">
+      <Sidebar />
+      <main className="flex-1 p-8">
+        <header className="flex justify-between items-center mb-12">
+          <div>
+            <h2 className="text-4xl font-bold text-gray-900">Hello, Mustafa</h2>
+            <p className="text-lg text-gray-500 mt-2">Here’s a quick overview of your progress.</p>
+          </div>
+          <button
+            onClick={goToTopicSelection} // onClick handler for navigation to TopicSelection
+            className="bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition"
+          >
+            Add New Topic
+          </button>
+        </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-        {/* Subject Sections */}
-        <div className="relative bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300">
-          <div className="absolute inset-0 bg-gradient-to-b from-blue-500 to-blue-700 opacity-50"></div>
-          <div className="relative p-6 z-10">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-bold text-white">Maths</h3>
-              <span className="text-sm text-gray-300">Monthly</span>
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+          <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-2xl font-semibold text-blue-600">Maths</h3>
+              <span className="text-gray-400 text-sm">Monthly</span>
             </div>
             <div className="space-y-4">
-              <div className="bg-white bg-opacity-10 p-4 rounded-lg flex items-center justify-between backdrop-filter backdrop-blur-lg">
-                <span className="text-white font-semibold">Take a quiz!</span>
-                <span className="text-white font-bold">{'>'}</span>
-              </div>
-              <div className="bg-white bg-opacity-10 p-4 rounded-lg flex items-center justify-between backdrop-filter backdrop-blur-lg">
-                <span className="text-white font-semibold">Learning Path</span>
-                <span className="text-white font-bold">{'>'}</span>
-              </div>
-              <div className="bg-white bg-opacity-10 p-4 rounded-lg flex items-center justify-between backdrop-filter backdrop-blur-lg">
-                <span className="text-white font-semibold">AI Teacher</span>
-                <span className="text-white font-bold">{'>'}</span>
-              </div>
+              <button
+                onClick={() => startQuiz('maths')}
+                className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition"
+              >
+                Take a quiz!
+              </button>
+              <button className="w-full bg-gray-100 text-gray-700 py-3 rounded-lg hover:bg-gray-200 transition">
+                Learning Path
+              </button>
+              <button className="w-full bg-gray-100 text-gray-700 py-3 rounded-lg hover:bg-gray-200 transition">
+                AI Teacher
+              </button>
             </div>
           </div>
-        </div>
 
-        <div className="relative bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300">
-          <div className="absolute inset-0 bg-gradient-to-b from-green-500 to-green-700 opacity-50"></div>
-          <div className="relative p-6 z-10">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-bold text-white">History</h3>
-              <span className="text-sm text-gray-300">Monthly</span>
+          <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-2xl font-semibold text-green-600">History</h3>
+              <span className="text-gray-400 text-sm">Monthly</span>
             </div>
             <div className="space-y-4">
-              <div className="bg-white bg-opacity-10 p-4 rounded-lg flex items-center justify-between backdrop-filter backdrop-blur-lg">
-                <span className="text-white font-semibold">Take a quiz!</span>
-                <span className="text-white font-bold">{'>'}</span>
-              </div>
-              <div className="bg-white bg-opacity-10 p-4 rounded-lg flex items-center justify-between backdrop-filter backdrop-blur-lg">
-                <span className="text-white font-semibold">Learning Path</span>
-                <span className="text-white font-bold">{'>'}</span>
-              </div>
-              <div className="bg-white bg-opacity-10 p-4 rounded-lg flex items-center justify-between backdrop-filter backdrop-blur-lg">
-                <span className="text-white font-semibold">AI Teacher</span>
-                <span className="text-white font-bold">{'>'}</span>
-              </div>
+              <button
+                onClick={() => startQuiz('history')}
+                className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition"
+              >
+                Take a quiz!
+              </button>
+              <button className="w-full bg-gray-100 text-gray-700 py-3 rounded-lg hover:bg-gray-200 transition">
+                Learning Path
+              </button>
+              <button className="w-full bg-gray-100 text-gray-700 py-3 rounded-lg hover:bg-gray-200 transition">
+                AI Teacher
+              </button>
             </div>
           </div>
-        </div>
 
-        <div className="relative bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300">
-          <div className="absolute inset-0 bg-gradient-to-b from-red-500 to-red-700 opacity-50"></div>
-          <div className="relative p-6 z-10">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-bold text-white">Economics</h3>
-              <span className="text-sm text-gray-300">Monthly</span>
+          <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-2xl font-semibold text-red-600">Economics</h3>
+              <span className="text-gray-400 text-sm">Monthly</span>
             </div>
             <div className="space-y-4">
-              <div className="bg-white bg-opacity-10 p-4 rounded-lg flex items-center justify-between backdrop-filter backdrop-blur-lg">
-                <span className="text-white font-semibold">Take a quiz!</span>
-                <span className="text-white font-bold">{'>'}</span>
-              </div>
-              <div className="bg-white bg-opacity-10 p-4 rounded-lg flex items-center justify-between backdrop-filter backdrop-blur-lg">
-                <span className="text-white font-semibold">Learning Path</span>
-                <span className="text-white font-bold">{'>'}</span>
-              </div>
-              <div className="bg-white bg-opacity-10 p-4 rounded-lg flex items-center justify-between backdrop-filter backdrop-blur-lg">
-                <span className="text-white font-semibold">AI Teacher</span>
-                <span className="text-white font-bold">{'>'}</span>
-              </div>
+              <button
+                onClick={() => startQuiz('economics')}
+                className="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition"
+              >
+                Take a quiz!
+              </button>
+              <button className="w-full bg-gray-100 text-gray-700 py-3 rounded-lg hover:bg-gray-200 transition">
+                Learning Path
+              </button>
+              <button className="w-full bg-gray-100 text-gray-700 py-3 rounded-lg hover:bg-gray-200 transition">
+                AI Teacher
+              </button>
             </div>
           </div>
-        </div>
-      </div>
+        </section>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Login Streak Section */}
-        <div className="relative bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300">
-          <div className="absolute inset-0 bg-gradient-to-b from-purple-500 to-purple-700 opacity-50"></div>
-          <div className="relative p-6 z-10">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-bold text-white">Login Streak</h3>
-              <span className="text-sm text-gray-300">Monthly</span>
-            </div>
-            <p className="text-4xl font-bold text-white mb-4">23</p>
-            <p className="text-gray-300">Total days logged in consecutively</p>
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+          <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+            <h3 className="text-xl font-semibold text-gray-700 mb-4">Login Streak</h3>
+            <p className="text-3xl font-bold text-purple-600">23 days</p>
+            <p className="text-gray-500 mt-2">Total days logged in consecutively</p>
+            <ul className="mt-4 space-y-2">
+              <li className="bg-gray-100 p-4 rounded-lg flex justify-between items-center">
+                <span className="text-gray-700 font-semibold">Day 1: Logged in</span>
+                <span className="text-gray-500">{'>'}</span>
+              </li>
+              <li className="bg-gray-100 p-4 rounded-lg flex justify-between items-center">
+                <span className="text-gray-700 font-semibold">Day 2: Logged in</span>
+                <span className="text-gray-500">{'>'}</span>
+              </li>
+              <li className="bg-gray-100 p-4 rounded-lg flex justify-between items-center">
+                <span className="text-gray-700 font-semibold">Day 3: Logged in</span>
+                <span className="text-gray-500">{'>'}</span>
+              </li>
+            </ul>
+          </div>
 
-            <div className="mt-8 space-y-4">
-              <div className="bg-white bg-opacity-10 p-4 rounded-lg flex items-center justify-between backdrop-filter backdrop-blur-lg">
-                <span className="text-white font-semibold">Day 1: Logged in</span>
-                <span className="text-white font-bold">{'>'}</span>
-              </div>
-              <div className="bg-white bg-opacity-10 p-4 rounded-lg flex items-center justify-between backdrop-filter backdrop-blur-lg">
-                <span className="text-white font-semibold">Day 2: Logged in</span>
-                <span className="text-white font-bold">{'>'}</span>
-              </div>
-              <div className="bg-white bg-opacity-10 p-4 rounded-lg flex items-center justify-between backdrop-filter backdrop-blur-lg">
-                <span className="text-white font-semibold">Day 3: Logged in</span>
-                <span className="text-white font-bold">{'>'}</span>
-              </div>
-              {/* Add more days as needed */}
+          <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+            <h3 className="text-xl font-semibold text-gray-700 mb-4">Quiz Progress</h3>
+            <p className="text-lg text-gray-500">Maths Quiz</p>
+            <p className="text-3xl font-bold text-yellow-600 mt-2">80%</p>
+            <div className="w-full h-32 bg-gray-100 rounded-lg flex items-center justify-center mt-4">
+              <p className="text-gray-500">Progress Graph Placeholder</p>
             </div>
           </div>
-        </div>
+        </section>
+      </main>
 
-        {/* Pipeline Value Section */}
-        <div className="relative bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300">
-          <div className="absolute inset-0 bg-gradient-to-b from-yellow-500 to-yellow-700 opacity-50"></div>
-          <div className="relative p-6 z-10">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-bold text-white">Pipeline Value</h3>
-              <span className="text-sm text-gray-300">Monthly</span>
-            </div>
-            <p className="text-4xl font-bold text-white mb-4">$50,000</p>
-            <p className="text-gray-300">Total booked: 5 meetings</p>
-
-            <div className="mt-8">
-              <div className="w-full h-32 bg-white bg-opacity-10 rounded-lg backdrop-filter backdrop-blur-lg">
-                {/* Graph placeholder */}
+      <aside className="bg-white p-8 min-h-screen shadow-lg w-64">
+        <h3 className="text-xl font-bold text-gray-700 mb-8">Calendar</h3>
+        <ul className="space-y-8">
+          <li>
+            <p className="text-sm text-gray-500">Oct 20, 2021</p>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <p className="text-gray-700">10:00 AM</p>
+                <p className="text-gray-500">Facebook Brand</p>
+              </div>
+              <div className="flex justify-between">
+                <p className="text-gray-700">1:20 PM</p>
+                <p className="text-gray-500">Task Management</p>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
+          </li>
+          <li>
+            <p className="text-sm text-gray-500">Oct 21, 2021</p>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <p className="text-gray-700">10:00 AM</p>
+                <p className="text-gray-500">Sleep App</p>
+              </div>
+              <div className="flex justify-between">
+                <p className="text-gray-700">1:20 PM</p>
+                <p className="text-gray-500">Task Management</p>
+              </div>
+            </div>
+          </li>
+          <li>
+            <p className="text-sm text-gray-500">Oct 22, 2021</p>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <p className="text-gray-700">10:00 AM</p>
+                <p className="text-gray-500">Meet Up</p>
+              </div>
+              <div className="flex justify-between">
+                <p className="text-gray-700">11:00 AM</p>
+                <p className="text-gray-500">Mobile App</p>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </aside>
     </div>
   );
 };

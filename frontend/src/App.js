@@ -13,7 +13,7 @@ import QuestionPage from './QuestionPage';
 import QuizResults from './QuizResults';
 import Login from './Login';
 import Register from './Register';
-import Navbar from './Navbar';
+import Navbar from './AppNavbar';
 
 
 
