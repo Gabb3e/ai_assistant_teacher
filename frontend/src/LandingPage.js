@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';  // Import Link for navigation
 
 const LandingPage = () => {
   return (
@@ -7,8 +8,9 @@ const LandingPage = () => {
       <nav className="flex justify-between items-center p-6 bg-gray-50 shadow">
         <div className="text-2xl font-bold text-gray-800">Study Assistant</div>
         <div>
-          <button className="text-gray-600 hover:text-gray-900 mr-4">Login</button>
-          <button className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300">Sign Up</button>
+          {/* Use Link to navigate to Login and Register */}
+          <Link to="/Login" className="text-gray-600 hover:text-gray-900 mr-4">Login</Link>
+          <Link to="/Register" className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300">Sign Up</Link>
         </div>
       </nav>
 
@@ -18,9 +20,9 @@ const LandingPage = () => {
         <p className="text-xl text-gray-600 mb-8">
           Personalized study plans, quizzes, and resources tailored to help you excel in your studies.
         </p>
-        <button className="bg-blue-600 text-white py-3 px-8 rounded-lg text-lg font-medium hover:bg-blue-700 transition duration-300">
+        <Link to="/Register" className="bg-blue-600 text-white py-3 px-8 rounded-lg text-lg font-medium hover:bg-blue-700 transition duration-300">
           Get Started
-        </button>
+        </Link>
       </header>
 
       {/* Features Section */}
