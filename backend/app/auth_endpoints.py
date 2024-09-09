@@ -1,16 +1,16 @@
 import os
 from typing import Annotated
 from dotenv import load_dotenv 
-from app.db_setup import get_db
+from db_setup import get_db
 from sqlalchemy.orm import Session
 from datetime import timedelta
 from sqlalchemy import select, update, delete, insert
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.exc import IntegrityError
 from fastapi import FastAPI, HTTPException, Depends, status, APIRouter
-from app.schemas.schemas import Token, UserOutSchema, UserRegisterSchema
-from app.security import hash_password, verify_password, create_access_token, get_current_user
-from app.models.models import User
+from schemas.schemas import Token, UserOutSchema, UserRegisterSchema
+from security import hash_password, verify_password, create_access_token, get_current_user
+from models.models import User
 
 load_dotenv(override=True)
 
