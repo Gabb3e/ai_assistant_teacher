@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field, ConfigDict
+from pydantic import BaseModel, EmailStr, ConfigDict
 from typing import Optional, List
 from datetime import datetime
 
@@ -11,15 +11,11 @@ class UserBase(BaseModel):
     gender: bool
     age: int
     activated: bool = True
+    
+    model_config = ConfigDict(from_attributes=True)
 
 class UserCreate(UserBase):
     password_hash: str
-
-class User(UserBase):
-    user_id: int
-    created_at: datetime
-
-    model_config = ConfigDict(from_attributes=True)
 
 
 # Subject Schemas
@@ -31,13 +27,13 @@ class SubjectCreate(SubjectBase):
     pass
 
 class Subject(SubjectBase):
-    subject_id: int
+
     model_config = ConfigDict(from_attributes=True)
 
 
 # Test Schemas
 class TestBase(BaseModel):
-    subject_id: int
+    
     name: str
     difficulty: Optional[str] = None
     time_limit: Optional[int] = None  # Time in minutes
@@ -46,14 +42,14 @@ class TestCreate(TestBase):
     pass
 
 class Test(TestBase):
-    test_id: int
+    
     created_at: datetime
     model_config = ConfigDict(from_attributes=True)
 
 
 # Question Schemas
 class QuestionBase(BaseModel):
-    test_id: int
+    
     question_text: str
     correct_answer: Optional[str] = None
     points: float
@@ -68,7 +64,7 @@ class Question(QuestionBase):
 
 # Question Option Schemas
 class QuestionOptionBase(BaseModel):
-    question_id: int
+   
     option_text: str
     is_correct: bool = False
 
@@ -135,3 +131,32 @@ class QuestionModel(BaseModel):
 class QuizCreateResponseModel(BaseModel):
     quiz_id: int
     questions: List[QuestionModel]
+    
+# Auth Schemas
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+    model_config = ConfigDict(from_attributes=True)
+
+class TokenPayload(BaseModel):
+    sub: str = None
+    exp: int = None
+
+class UserOutSchema(BaseModel):
+    id: int
+    email: EmailStr
+    last_name: str
+    first_name: str
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserRegisterSchema(BaseModel):
+    email: EmailStr
+    first_name: str
+    last_name: str
+    password: str
+    age: int
+    gender: bool
+    
+    model_config = ConfigDict(from_attributes=True)

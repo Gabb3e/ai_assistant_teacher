@@ -1,7 +1,10 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import { useNavigate } from 'react-router-dom'; 
 
-const Sidebar = () => {
+const Sidebar = ({user}) => {
+  
+  if (user)
+  {
   return (
     <aside className="bg-white p-8 min-h-screen shadow-lg">
       <div className="mb-10">
@@ -10,8 +13,8 @@ const Sidebar = () => {
           alt="User Avatar"
           className="rounded-full w-20 h-20 mb-4"
         />
-        <h3 className="text-xl font-bold">Mustafa Naji</h3>
-        <p className="text-sm text-gray-500">Mustafa@prospexs.ai</p>
+        <h3 className="text-xl font-bold">{user.first_name} {user.last_name}</h3>
+        <p className="text-sm text-gray-500">{user.email}</p>
       </div>
       <nav>
         <ul>
@@ -36,14 +39,14 @@ const Sidebar = () => {
             </a>
           </li>
           <li className="mb-4">
-            <a href="/tracking" className="text-lg font-semibold text-gray-700 hover:text-blue-600">
+            <a href="/login" className="text-lg font-semibold text-gray-700 hover:text-blue-600">
               Logout
             </a>
           </li>
         </ul>
       </nav>
     </aside>
-  );
+  );}
 };
 
 const Dashboard = () => {
@@ -57,13 +60,58 @@ const Dashboard = () => {
     navigate('/TopicSelection'); // Navigate to the TopicSelection page
   };
 
-  return (
+  const [user, setUser] = useState(null);  // Initialize user state as null
+  const [error, setError] = useState(null);  // Error handling state
+ 
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const token = localStorage.getItem("token");  // Ensure you're using the correct token key
+      if (!token) {
+        console.log(token);
+        console.log("No token found");
+        return;
+      }
+
+      try {
+        const response = await fetch("http://127.0.0.1:8000/me", {
+          method: "GET",
+          headers: {
+            "accept": "application/json",
+            "Authorization": `Bearer ${token}`,  // Pass the token in the Authorization header
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log("This is the response", data);
+          setUser(data);  // Set the user data
+          navigate("/dashboard");  // Redirect to login if no token is found
+        } else {
+          const errorData = await response.json();
+          setError(errorData.detail || "Failed to fetch user data");
+        }
+      } catch (error) {
+        setError("An error occurred while fetching user data.");
+      }
+    };
+
+    fetchUser();
+  }, [navigate]);  // Add `navigate` to dependency array to avoid stale closures
+
+  // Handle error state
+  if (error) {
+    return <div>{error}</div>;
+  }
+
+if (user)
+{  return (
     <div className="flex bg-gray-100 min-h-screen">
-      <Sidebar />
+      <Sidebar user={user}/>
       <main className="flex-1 p-8">
         <header className="flex justify-between items-center mb-12">
           <div>
-            <h2 className="text-4xl font-bold text-gray-900">Hello, Mustafa</h2>
+            <h2 className="text-4xl font-bold text-gray-900">Hello, {user.first_name}!</h2>
             <p className="text-lg text-gray-500 mt-2">Here’s a quick overview of your progress.</p>
           </div>
           <button
@@ -216,7 +264,7 @@ const Dashboard = () => {
         </ul>
       </aside>
     </div>
-  );
+  );}
 };
 
 export default Dashboard;
