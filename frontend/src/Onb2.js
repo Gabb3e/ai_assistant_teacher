@@ -1,12 +1,8 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 
-const Onb2 = () => {
-  const navigate = useNavigate();
 
-  const handleNext = () => {
-    navigate('/onb3');
-  };
+const Onb2 = ({nextStep, previousStep}) => {
+
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-white">
@@ -36,10 +32,10 @@ const Onb2 = () => {
           <button className="bg-blue-600 text-white p-4 rounded-lg">Add your own +</button>
         </div>
         <div className="flex justify-between">
-          <button className="text-gray-500">Back</button>
+          <button className="text-gray-500" onClick={previousStep}>Back</button>
           <button 
             className="bg-blue-600 text-white py-2 px-6 rounded-lg"
-            onClick={handleNext}
+            onClick={nextStep}
           >
             Continue →
           </button>

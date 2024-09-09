@@ -1,17 +1,21 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Register = () => {
-
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
     email: "",
     age: "",
     password: "",
+    confirmPassword: "",
     gender: ""
   });
+
+  const [loading, setLoading] = useState(false); // State to show loading
+  const [error, setError] = useState({}); // State to handle error messages for individual fields
+  const [success, setSuccess] = useState(''); // State to handle success messages
+  const navigate = useNavigate(); // Hook to use navigate function
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -21,23 +25,66 @@ const Register = () => {
     });
   };
 
-  const [loading, setLoading] = useState(false); // State to show loading
-  const [error, setError] = useState(''); // State to handle error messages
-  const [success, setSuccess] = useState(''); // State to handle success messages
-  const navigate = useNavigate(); // Hook to use navigate function
+  const validateForm = () => {
+    let validationErrors = {};
+
+    if (!formData.first_name.trim()) {
+      validationErrors.first_name = 'First name is required';
+    }
+
+    if (!formData.last_name.trim()) {
+      validationErrors.last_name = 'Last name is required';
+    }
+
+    if (!formData.email.trim()) {
+      validationErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      validationErrors.email = 'Email address is invalid';
+    }
+
+    if (!formData.gender) {
+      validationErrors.gender = 'Gender is required';
+    }
+
+    if (!formData.age) {
+      validationErrors.age = 'Age is required';
+    } else if (isNaN(formData.age) || formData.age <= 0) {
+      validationErrors.age = 'Age must be a valid number';
+    }
+
+    if (!formData.password) {
+      validationErrors.password = 'Password is required';
+    } else if (formData.password.length < 6) {
+      validationErrors.password = 'Password must be at least 6 characters long';
+    }
+
+    if (!formData.confirmPassword) {
+      validationErrors.confirmPassword = 'Confirm password is required';
+    } else if (formData.password !== formData.confirmPassword) {
+      validationErrors.confirmPassword = 'Passwords do not match';
+    }
+
+    return validationErrors;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); // Set loading to true when form is submitted
-    setError(''); // Reset error message
-    setSuccess(''); // Reset success message
-    const age = Number(formData.age);
+    setLoading(true);
+    setError({}); // Clear previous errors
+    setSuccess(''); // Clear previous success messages
+
+    const formErrors = validateForm();
+    if (Object.keys(formErrors).length > 0) {
+      setLoading(false);
+      setError(formErrors);
+      return;
+    }
 
     const requestData = {
       ...formData,
-      age: age  // Ensure age is a number
+      age: Number(formData.age)  // Ensure age is a number
     };
-   
+
     try {
       const response = await fetch('http://127.0.0.1:8000/user', {
         method: 'POST',
@@ -46,21 +93,21 @@ const Register = () => {
         },
         body: JSON.stringify(requestData), // Convert form data to JSON
       });
-  
-     
+
       if (response.ok) {
-        // If registration is successful, redirect to /login
+        localStorage.setItem("isFirstLogin", "true");
+        setSuccess("Registration successful!");
         navigate("/login");  // Redirect to the login page
       } else {
         const errorData = await response.json();
-        setError(errorData.detail || "Registration failed");
+        setError({ general: errorData.detail || "Registration failed" });
       }
     } catch (error) {
-      setError("An error occurred during registration.");
+      setError({ general: "An error occurred during registration." });
+    } finally {
+      setLoading(false);
+    }
   };
-};
-    
-
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-gradient-to-r from-blue-500 to-indigo-600">
@@ -68,7 +115,7 @@ const Register = () => {
       <div className="hidden lg:flex w-full lg:w-1/2 justify-center items-center bg-white">
         <div className="p-10">
           <img
-            src="https://via.placeholder.com/400"
+            src="./AI-logo.webp"
             alt="Registration Illustration"
             className="max-w-sm mx-auto"
           />
@@ -106,10 +153,12 @@ const Register = () => {
                 value={formData.first_name}
                 required
               />
+              {error.first_name && <p className="text-red-500 text-sm">{error.first_name}</p>}
             </div>
+            
             <div className="mb-6">
               <label
-                htmlFor="lastname"
+                htmlFor="last_name"
                 className="block text-gray-700 text-sm font-bold mb-2"
               >
                 Last Name
@@ -124,7 +173,9 @@ const Register = () => {
                 value={formData.last_name}
                 required
               />
+              {error.last_name && <p className="text-red-500 text-sm">{error.last_name}</p>}
             </div>
+
             <div className="mb-6">
               <label
                 htmlFor="email"
@@ -142,7 +193,9 @@ const Register = () => {
                 value={formData.email}
                 required
               />
+              {error.email && <p className="text-red-500 text-sm">{error.email}</p>}
             </div>
+
             <div className="mb-6">
               <label
                 htmlFor="gender"
@@ -162,7 +215,9 @@ const Register = () => {
                 <option value="true">Male</option>
                 <option value="false">Female</option>
               </select>
+              {error.gender && <p className="text-red-500 text-sm">{error.gender}</p>}
             </div>
+
             <div className="mb-6">
               <label
                 htmlFor="age"
@@ -177,10 +232,12 @@ const Register = () => {
                 placeholder="Enter your age"
                 name="age"
                 onChange={handleChange}
-                value={formData.age} 
+                value={formData.age}
                 required
               />
+              {error.age && <p className="text-red-500 text-sm">{error.age}</p>}
             </div>
+
             <div className="mb-6">
               <label
                 htmlFor="password"
@@ -198,29 +255,41 @@ const Register = () => {
                 name="password"
                 required
               />
+              {error.password && <p className="text-red-500 text-sm">{error.password}</p>}
             </div>
+
             <div className="mb-6">
               <label
-                htmlFor="confirm-password"
+                htmlFor="confirmPassword"
                 className="block text-gray-700 text-sm font-bold mb-2"
               >
                 Confirm Password
               </label>
               <input
                 type="password"
-                id="confirm-password"
+                id="confirmPassword"
                 className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
                 placeholder="Confirm your password"
+                name="confirmPassword"
+                onChange={handleChange}
+                value={formData.confirmPassword}
                 required
               />
+              {error.confirmPassword && <p className="text-red-500 text-sm">{error.confirmPassword}</p>}
             </div>
+
+            {error.general && <p className="text-red-500 text-center mb-4">{error.general}</p>}
+            {success && <p className="text-green-500 text-center mb-4">{success}</p>}
+
             <button
               type="submit"
               className="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-indigo-700 transition duration-300"
+              disabled={loading}
             >
-              Register
+              {loading ? 'Registering...' : 'Register'}
             </button>
           </form>
+
           <div className="text-center mt-6">
             <p className="text-gray-700">
               Already have an account?{" "}

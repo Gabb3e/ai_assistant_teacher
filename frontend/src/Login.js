@@ -1,11 +1,10 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const navigate = useNavigate(); // Hook to use navigate function
   const [loading, setLoading] = useState(false); // State to show loading
   const [error, setError] = useState(''); // State to handle error messages
-  const [success, setSuccess] = useState(''); // State to handle success messages
   const [loginData, setLoginData] = useState({
     username: "",
     password: "",
@@ -19,11 +18,11 @@ const Login = () => {
     });
   };
 
-
   const handleSubmit = async (e) => {
-    console.log(loginData);
-    
     e.preventDefault();
+    setLoading(true); // Set loading state when submitting
+    setError(''); // Reset error state before submission
+
     try {
       const formData = new URLSearchParams();
       formData.append('username', loginData.username);
@@ -34,25 +33,33 @@ const Login = () => {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: formData.toString(), // Convert form data to JSON
+        body: formData.toString(),
       });
-  
-     
+
       if (response.ok) {
-        // If registration is successful, redirect to /login
+        // If login is successful, redirect to /dashboard
         const data = await response.json();
+        console.log("This is data", data);
         localStorage.setItem('token', data.access_token);
-        navigate("/dashboard");  // Redirect to the login page
+        localStorage.setItem("first_name", data.first_name);
+        const isFirstLogin = localStorage.getItem('isFirstLogin') === 'true';
+        
+        if (isFirstLogin) {
+          navigate("/onboarding"); // Redirect to the onboarding page
+        } else {
+          navigate("/dashboard");
+         } // Redirect to the dashboard page
       } else {
+        // If the credentials are incorrect, show an error
         const errorData = await response.json();
-        setError(errorData.detail || "Login failed");
+        setError(errorData.detail || "Username and password do not match");
       }
     } catch (error) {
-      setError("An error occurred during login.");
+      setError("An error occurred during login. Please try again.");
+    } finally {
+      setLoading(false); // Stop loading after response
+    }
   };
-};
-
-  
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-gradient-to-r from-blue-500 to-indigo-600">
@@ -60,9 +67,9 @@ const Login = () => {
       <div className="hidden lg:flex w-full lg:w-1/2 justify-center items-center bg-white">
         <div className="p-10">
           <img 
-            src="https://via.placeholder.com/400" 
+            src="./AI-logo.webp" 
             alt="Login Illustration" 
-            className="max-w-sm mx-auto"
+            className="max-w-sm mx-auto rounded-lg shadow-lg"
           />
           <h2 className="text-4xl font-bold text-gray-800 mt-10">Welcome Back!</h2>
           <p className="text-lg text-gray-600 mt-4">
@@ -85,8 +92,8 @@ const Login = () => {
                 id="email"
                 className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
                 placeholder="Enter your email"
-                name='username'
-                
+                name="username"
+                value={loginData.username}
                 onChange={handleChange}
                 required
               />
@@ -100,8 +107,8 @@ const Login = () => {
                 id="password"
                 className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
                 placeholder="Enter your password"
-                
-                name='password'
+                name="password"
+                value={loginData.password}
                 onChange={handleChange}
                 required
               />
@@ -115,13 +122,20 @@ const Login = () => {
                 Forgot Password?
               </a>
             </div>
+
+            {error && (
+              <div className="mb-4 text-red-500 text-sm text-center">
+                {error}
+              </div>
+            )}
+
             <button
               type="submit"
               className="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-indigo-700 transition duration-300"
+              disabled={loading}
             >
-              Login
+              {loading ? "Logging in..." : "Login"}
             </button>
-           
           </form>
           <div className="text-center mt-6">
             <p className="text-gray-700">
@@ -133,7 +147,6 @@ const Login = () => {
           </div>
         </div>
       </div>
-      
     </div>
   );
 };
