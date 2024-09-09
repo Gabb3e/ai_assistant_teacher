@@ -9,7 +9,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white shadow-lg">
+    <nav className="bg-white shadow-lg mb-24 mt-0">
       <div className="container mx-auto px-6 py-4 flex justify-between items-center">
         <div className="flex space-x-6">
           <Link
@@ -39,7 +39,7 @@ const Navbar = () => {
         </div>
         <button
           onClick={handleLogout}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition duration-300"
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition duration-300 ml-6"
         >
           Logout
         </button>

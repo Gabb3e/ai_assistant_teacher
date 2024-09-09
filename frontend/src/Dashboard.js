@@ -223,20 +223,20 @@ if (user)
         <h3 className="text-xl font-bold text-gray-700 mb-8">Calendar</h3>
         <ul className="space-y-8">
           <li>
-            <p className="text-sm text-gray-500">Oct 20, 2021</p>
+            <p className="text-sm text-gray-500">Oct 20, 2024</p>
             <div className="space-y-2">
               <div className="flex justify-between">
                 <p className="text-gray-700">10:00 AM</p>
-                <p className="text-gray-500">Facebook Brand</p>
+                <p className="text-gray-500">Math test</p>
               </div>
               <div className="flex justify-between">
                 <p className="text-gray-700">1:20 PM</p>
-                <p className="text-gray-500">Task Management</p>
+                <p className="text-gray-500">History test</p>
               </div>
             </div>
           </li>
           <li>
-            <p className="text-sm text-gray-500">Oct 21, 2021</p>
+            <p className="text-sm text-gray-500">Oct 21, 2024</p>
             <div className="space-y-2">
               <div className="flex justify-between">
                 <p className="text-gray-700">10:00 AM</p>
@@ -244,12 +244,12 @@ if (user)
               </div>
               <div className="flex justify-between">
                 <p className="text-gray-700">1:20 PM</p>
-                <p className="text-gray-500">Task Management</p>
+                <p className="text-gray-500">Economics test</p>
               </div>
             </div>
           </li>
           <li>
-            <p className="text-sm text-gray-500">Oct 22, 2021</p>
+            <p className="text-sm text-gray-500">Oct 22, 2024</p>
             <div className="space-y-2">
               <div className="flex justify-between">
                 <p className="text-gray-700">10:00 AM</p>
@@ -257,7 +257,7 @@ if (user)
               </div>
               <div className="flex justify-between">
                 <p className="text-gray-700">11:00 AM</p>
-                <p className="text-gray-500">Mobile App</p>
+                <p className="text-gray-500">History assignment</p>
               </div>
             </div>
           </li>
