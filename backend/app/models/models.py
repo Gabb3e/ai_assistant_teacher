@@ -155,6 +155,7 @@ class LoginHistory(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
     login_time: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    ip_address: Mapped[str] = mapped_column(String, nullable=False)
 
     # Relationship back to user
     user: Mapped[User] = relationship("User", back_populates="login_history")

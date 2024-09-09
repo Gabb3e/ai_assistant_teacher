@@ -2,12 +2,12 @@ import os
 from typing import Annotated
 from sqlalchemy import select
 from dotenv import load_dotenv
-from app.db_setup import get_db
+from db_setup import get_db
 from sqlalchemy.orm import Session
-from app.models.models import User
+from models.models import User
 from pydantic import ValidationError
 from passlib.context import CryptContext
-from app.schemas.schemas import TokenPayload
+from schemas.schemas import TokenPayload
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends, status, HTTPException
 from datetime import timedelta, datetime, timezone

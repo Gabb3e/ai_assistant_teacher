@@ -138,6 +138,10 @@ class Token(BaseModel):
     access_token: str
     token_type: str
     model_config = ConfigDict(from_attributes=True)
+    
+class TokenWithStreak(Token):
+    ip: str
+    login_streak: int
 
 class TokenPayload(BaseModel):
     sub: str = None
@@ -148,6 +152,10 @@ class UserOutSchema(BaseModel):
     email: EmailStr
     last_name: str
     first_name: str
+    age: int
+    gender: bool
+    login_streak: int
+    created_at: datetime
     model_config = ConfigDict(from_attributes=True)
 
 
