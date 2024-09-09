@@ -6,22 +6,28 @@ from sqlalchemy.sql import func
 from datetime import datetime
 
 class Base(DeclarativeBase):
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, index=True)
 
 
 # User Model
 class User(Base):
     __tablename__ = 'users'
 
-    user_id: Mapped[int] = mapped_column(Integer, primary_key=True, unique=True, index=True)
+    
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
-    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    password: Mapped[str] = mapped_column(String(255), nullable=False)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default=func.now())
     first_name: Mapped[str] = mapped_column(String(255), nullable=False)
     last_name: Mapped[str] = mapped_column(String(255), nullable=False)
     gender: Mapped[bool] = mapped_column(Boolean, nullable=False)
     age: Mapped[int] = mapped_column(BigInteger, nullable=False)
     activated: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    last_login: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    login_streak: Mapped[int] = mapped_column(Integer, default=0)
+
+    # Relationship to login history
+    login_history: Mapped[list["LoginHistory"]] = relationship("LoginHistory", back_populates="user")
+
 
     test_attempts: Mapped[list["TestAttempt"]] = relationship("TestAttempt", back_populates="user")
 
@@ -29,7 +35,7 @@ class User(Base):
 class Subject(Base):
     __tablename__ = 'subjects'
 
-    subject_id: Mapped[int] = mapped_column(Integer, primary_key=True, unique=True, index=True)
+    
     name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text)
 
@@ -39,8 +45,8 @@ class Subject(Base):
 class Test(Base):
     __tablename__ = 'tests'
 
-    test_id: Mapped[int] = mapped_column(Integer, primary_key=True, unique=True, index=True)
-    subject_id: Mapped[int] = mapped_column(ForeignKey('subjects.subject_id'), nullable=False)
+    
+    subject_id: Mapped[int] = mapped_column(ForeignKey('subjects.id'), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     difficulty: Mapped[Optional[str]] = mapped_column(String(50))
     time_limit: Mapped[Optional[int]] = mapped_column(Integer)  # Time in minutes
@@ -54,8 +60,7 @@ class Test(Base):
 class Question(Base):
     __tablename__ = 'questions'
 
-    question_id: Mapped[int] = mapped_column(Integer, primary_key=True, unique=True, index=True)
-    test_id: Mapped[int] = mapped_column(ForeignKey('tests.test_id'), nullable=False)
+    test_id: Mapped[int] = mapped_column(ForeignKey('tests.id'), nullable=False)
     question_text: Mapped[str] = mapped_column(Text, nullable=False)
     correct_answer: Mapped[Optional[str]] = mapped_column(Text)
     points: Mapped[float] = mapped_column(Numeric, nullable=False)
@@ -68,8 +73,8 @@ class Question(Base):
 class QuestionOption(Base):
     __tablename__ = 'question_options'
 
-    option_id: Mapped[int] = mapped_column(Integer, primary_key=True, unique=True, index=True)
-    question_id: Mapped[int] = mapped_column(ForeignKey('questions.question_id'), nullable=False)
+    
+    question_id: Mapped[int] = mapped_column(ForeignKey('questions.id'), nullable=False)
     option_text: Mapped[str] = mapped_column(Text, nullable=False)
     is_correct: Mapped[bool] = mapped_column(Boolean, default=False)
 
@@ -79,9 +84,9 @@ class QuestionOption(Base):
 class TestAttempt(Base):
     __tablename__ = 'test_attempts'
 
-    attempt_id: Mapped[int] = mapped_column(Integer, primary_key=True, unique=True, index=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey('users.user_id'), nullable=False)
-    test_id: Mapped[int] = mapped_column(ForeignKey('tests.test_id'), nullable=False)
+    
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=False)
+    test_id: Mapped[int] = mapped_column(ForeignKey('tests.id'), nullable=False)
     start_time: Mapped[Optional[datetime]] = mapped_column(TIMESTAMP(timezone=True))
     end_time: Mapped[Optional[datetime]] = mapped_column(TIMESTAMP(timezone=True))
     score: Mapped[Optional[float]] = mapped_column(Numeric)
@@ -94,10 +99,9 @@ class TestAttempt(Base):
 class SubmittedAnswer(Base):
     __tablename__ = 'submitted_answers'
 
-    answer_id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    attempt_id: Mapped[int] = mapped_column(ForeignKey('test_attempts.attempt_id'), nullable=False)
-    question_id: Mapped[int] = mapped_column(ForeignKey('questions.question_id'), nullable=False)
-    submitted_option_id: Mapped[Optional[int]] = mapped_column(ForeignKey('question_options.option_id'))
+    attempt_id: Mapped[int] = mapped_column(ForeignKey('test_attempts.id'), nullable=False)
+    question_id: Mapped[int] = mapped_column(ForeignKey('questions.id'), nullable=False)
+    submitted_option_id: Mapped[Optional[int]] = mapped_column(ForeignKey('question_options.id'))
     submitted_text: Mapped[Optional[str]] = mapped_column(Text)
 
     test_attempt: Mapped["TestAttempt"] = relationship("TestAttempt", back_populates="submitted_answers")
@@ -123,7 +127,7 @@ class QuizModel(Base):
     topic: Mapped[str] = mapped_column(String(100), nullable=False)
     num_questions: Mapped[int] = mapped_column(Integer, nullable=False)
     difficulty: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
     questions: Mapped[list["QuizQuestionModel"]] = relationship("QuizQuestionModel", back_populates="quiz", cascade="all, delete-orphan")
 
@@ -144,3 +148,13 @@ class QuizQuestionModel(Base):
 
     def __repr__(self):
         return f"<QuizQuestionModel id={self.id} quiz_id={self.quiz_id} question={self.question}>"
+
+class LoginHistory(Base):
+    __tablename__ = 'login_history'
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    login_time: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+
+    # Relationship back to user
+    user: Mapped[User] = relationship("User", back_populates="login_history")

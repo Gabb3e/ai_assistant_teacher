@@ -1,4 +1,4 @@
-#!/Users/musse/ai_assistant_teacher/backend/venv/bin/python3.11
+#!/Users/raymondj/Desktop/Git/ai_assistant_teacher/backend/venv/bin/python3.11
 # -*- coding: utf-8 -*-
 import re
 import sys

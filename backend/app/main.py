@@ -1,13 +1,14 @@
 from fastapi import FastAPI, HTTPException, Depends, status, Request, Query
-from app.db_setup import init_db, get_db
+from app.db_setup import init_db, get_db, engine
 from contextlib import asynccontextmanager
 from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy import select, update, delete, insert
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Annotated
-from app.models.models import ChatRequest, ChatResponse, QuizModel, QuizQuestionModel
-from app.schemas.schemas import ChatRequestModel, ChatResponseModel, QuizCreateResponseModel, QuizCreateRequestModel, QuestionModel
+from app.models.models import ChatRequest, ChatResponse, QuizModel, QuizQuestionModel, User, Base
+from app.schemas.schemas import ChatRequestModel, ChatResponseModel, QuizCreateResponseModel, QuizCreateRequestModel, QuestionModel, UserCreate, UserBase
 from openai import OpenAI
+from app.auth_endpoints import auth_router
 import httpx
 from typing import List, Dict, Any
 from uuid import uuid4
@@ -19,6 +20,30 @@ import re
 # uvicorn app.main:app --reload
 
 # Dependency to load API key from environment variables
+
+# origin = [
+#     "http://localhost:3000/",
+#     "http://localhost:5173/",
+#     "http://localhost:8000/"
+# ]
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db() 
+    yield
+
+app = FastAPI(lifespan=lifespan)
+
+
+app.include_router(auth_router) #So routes works in auth_endpoints
+print("auth_router", auth_router)
+app.add_middleware(
+CORSMiddleware,
+allow_origins=["*"], # Allows all origins
+allow_credentials=True,
+allow_methods=["*"], # Allows all methods
+allow_headers=["*"], # Allows all headers
+)
 
 
 def load_api_key() -> str:
@@ -70,7 +95,7 @@ def parse_quiz_response(ai_response: str) -> List[Dict[str, Any]]:
     print(f"Full AI Response: {ai_response}")  # This will print the AI response for inspection
 
     # Extract the answers key from the response
-    answer_key_match = re.search(r'(### Answers|Answers Key|Answers)\s*[:\n](.+)', ai_response, re.S)
+    answer_key_match = re.search(r'(###\s*Answers?|Answer\s*Key|Answers?)\s*[:\n-]?\s*(.+)', ai_response, re.S)
     if answer_key_match:
         answer_key_block = answer_key_match.group(2).strip()
 
@@ -78,7 +103,7 @@ def parse_quiz_response(ai_response: str) -> List[Dict[str, Any]]:
         print(f"Extracted Answer Key Block: {answer_key_block}")
 
         # Extract each answer using regex for "number) Answer"
-        answer_matches = re.findall(r'(\d+)\.\s*([A-Da-d])', answer_key_block)
+        answer_matches = re.findall(r'(\d+)[\.\)]?\s*([A-Da-d])[\)\.]?\s*', answer_key_block)
         if answer_matches:
             for idx, (question_num, correct_option) in enumerate(answer_matches):
                 correct_index = ['a', 'b', 'c', 'd', 'A', 'B', 'C', 'D'].index(correct_option)
@@ -97,23 +122,11 @@ def parse_quiz_response(ai_response: str) -> List[Dict[str, Any]]:
 
     return questions
 
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-   await init_db()
-   yield
-
-
-app = FastAPI(lifespan=lifespan)
-# app.include_router(auth_router)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["*"],
-)
+@app.post("/reset-db", status_code=200, tags=["Database"])
+def reset_database():
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
+    return {"message": "Database was successfully reset."}
 
 # In-memory store for conversations (for simplicity)
 conversations: Dict[str, List[Dict[str, str]]] = {}
@@ -298,19 +311,25 @@ async def chat_history(session_id: str):
 
     return {"session_id": session_id, "history": conversations[session_id]}
 
-@app.get("/listings", status_code=200, tags=["listing"])
-def list_listings(db: Session = Depends(get_db)):
-        pass
-#     """
-#     This lists all listingss, we get an array of the listings
-#     """
-#     listings = db.scalars(select(Listings).options(
-#         selectinload(Listings.property),
-#         selectinload(Listings.renter),
-#         selectinload(Listings.admin_user),
-#         selectinload(Listings.neighborhood),
-#         selectinload(Listings.img),
-#         selectinload(Listings.weeks),
-#         selectinload(Listings.notes)
-#     )
-# ).all()
+
+@app.get("/user", status_code=200, tags=["User"])
+async def get_users(db: Session = Depends(get_db)):
+    """
+    Get all users
+    """
+    result = db.query(User.first_name, User.last_name)
+    
+    if not result:
+        return HTTPException(status_code=404, detail="User not found")
+    return result
+
+@app.get("/user/{id}", status_code=200, tags=["User"])
+async def get_users(id: int, db: Session = Depends(get_db)):
+    """
+    Get a user by ID
+    """
+    result = db.execute(select(User).filter(User.id == id))
+    if not result:
+        return HTTPException(status_code=404, detail="User not found")
+    return {"users": "Successfully fetched users."}
+
