@@ -1,16 +1,11 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const Navbar = () => {
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    navigate('/');
-  };
-
   return (
-    <nav className="bg-white shadow-lg mb-24 mt-0">
-      <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+    <nav className="bg-white shadow-lg fixed top-0 w-full z-50">
+      <div className="text-2xl font-bold text-blue-900 mx-5 mt-5">Study Assistant</div>
+      <div className="container mx-auto pb-3 flex justify-center items-center">
         <div className="flex space-x-6">
           <Link
             to="/dashboard"
@@ -37,12 +32,6 @@ const Navbar = () => {
             Profile
           </Link>
         </div>
-        <button
-          onClick={handleLogout}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition duration-300 ml-6"
-        >
-          Logout
-        </button>
       </div>
     </nav>
   );
