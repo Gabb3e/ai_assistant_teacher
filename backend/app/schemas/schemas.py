@@ -168,3 +168,9 @@ class UserRegisterSchema(BaseModel):
     gender: bool
     
     model_config = ConfigDict(from_attributes=True)
+
+
+class SubjectInSchema(BaseModel):
+    subject: str
+
+    model_config = ConfigDict(from_attributes=True)

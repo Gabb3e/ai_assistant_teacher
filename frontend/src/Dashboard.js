@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import { useNavigate } from 'react-router-dom'; 
 
 const Sidebar = ({user}) => {
-  
+  console.log(user);
   if (user)
   {
   return (
@@ -84,7 +84,6 @@ const Dashboard = () => {
 
         if (response.ok) {
           const data = await response.json();
-          console.log("This is the response", data);
           setUser(data);  // Set the user data
           navigate("/dashboard");  // Redirect to login if no token is found
         } else {
@@ -190,21 +189,15 @@ if (user)
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
           <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
             <h3 className="text-xl font-semibold text-gray-700 mb-4">Login Streak</h3>
-            <p className="text-3xl font-bold text-purple-600">23 days</p>
+            <p className="text-3xl font-bold text-purple-600">{user.login_streak} days</p>
             <p className="text-gray-500 mt-2">Total days logged in consecutively</p>
             <ul className="mt-4 space-y-2">
-              <li className="bg-gray-100 p-4 rounded-lg flex justify-between items-center">
-                <span className="text-gray-700 font-semibold">Day 1: Logged in</span>
-                <span className="text-gray-500">{'>'}</span>
-              </li>
-              <li className="bg-gray-100 p-4 rounded-lg flex justify-between items-center">
-                <span className="text-gray-700 font-semibold">Day 2: Logged in</span>
-                <span className="text-gray-500">{'>'}</span>
-              </li>
-              <li className="bg-gray-100 p-4 rounded-lg flex justify-between items-center">
-                <span className="text-gray-700 font-semibold">Day 3: Logged in</span>
-                <span className="text-gray-500">{'>'}</span>
-              </li>
+            {Array.from({ length: user.login_streak }).map((_, index) => (
+          <li key={index} className="bg-gray-100 p-4 rounded-lg flex justify-between items-center">
+            <span className="text-gray-700 font-semibold">Day {index + 1}: Logged in</span>
+            <span className="text-gray-500">{'>'}</span>
+          </li>
+        ))}
             </ul>
           </div>
 

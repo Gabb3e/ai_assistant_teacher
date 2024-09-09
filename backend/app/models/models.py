@@ -159,3 +159,4 @@ class LoginHistory(Base):
 
     # Relationship back to user
     user: Mapped[User] = relationship("User", back_populates="login_history")
+

@@ -2,6 +2,7 @@ import os
 from typing import Annotated
 from dotenv import load_dotenv 
 from db_setup import get_db
+from db_setup import get_db
 from sqlalchemy.orm import Session
 from datetime import timedelta, datetime
 from sqlalchemy import select, update, delete, insert
