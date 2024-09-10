@@ -1,15 +1,15 @@
 from fastapi import FastAPI, HTTPException, Depends, status, Request, Query
-from db_setup import init_db, get_db, engine
+from app.db_setup import init_db, get_db, engine
 from contextlib import asynccontextmanager
 from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy import select, update, delete, insert
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Annotated
-from models.models import ChatRequest, ChatResponse, QuizModel, QuizQuestionModel, User, Base
-from schemas.schemas import ChatRequestModel, ChatResponseModel, QuizCreateResponseModel, QuizCreateRequestModel, QuestionModel, UserCreate, UserBase
+from app.models.models import ChatRequest, ChatResponse, QuizModel, QuizQuestionModel, User, Base
+from app.schemas.schemas import ChatRequestModel, ChatResponseModel, QuizCreateResponseModel, QuizCreateRequestModel, QuestionModel, UserCreate, UserBase
 from openai import OpenAI
-from auth_endpoints import auth_router
-from quiz_onb_endpoints import quiz_router
+from app.auth_endpoints import auth_router
+from app.quiz_onb_endpoints import quiz_router
 import httpx
 from typing import List, Dict, Any
 from uuid import uuid4

@@ -5,6 +5,9 @@ from sqlalchemy import pool
 
 from alembic import context
 
+# alembic revision --autogenerate -m "your migration message"
+# alembic upgrade head
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
