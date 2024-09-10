@@ -1,6 +1,7 @@
 from openai import OpenAI
 from pydantic import BaseModel  
 import os
+import json
 import re
 from fastapi import FastAPI, HTTPException, Depends, Request, status, APIRouter
 from typing import List, Dict, Any
@@ -54,18 +55,29 @@ async def generate_topics(subject_request: SubjectInSchema):
 
     # Extract generated topics from response
     ai_response = response.choices[0].message.content
-    #topics = parse_topics_response(ai_response)
+    topics = parse_topics_response(ai_response)
 
-    return {"subject": subject, "topics": ai_response}
+    return {"subject": subject, "topics": topics}
 
 
 def parse_topics_response(ai_response: str) -> List[str]:
     """
-    Parse the AI response to extract topics.
+    Parse the AI response to extract topics, removing any code block formatting and parsing the JSON.
     """
-    # Use regex or a simple split to parse out the topics if they are in a list form
-    topics = re.split(r'\d+\.\s+', ai_response.strip())
-    
-    # Filter out empty strings
-    return [topic.strip() for topic in topics if topic.strip()]
+    # Step 1: Remove the code block formatting, if present
+    ai_response = ai_response.strip()  # Remove leading/trailing whitespace
+    if ai_response.startswith("```json"):
+        ai_response = re.sub(r"```json\n|\n```", "", ai_response).strip()
+
+    # Step 2: Parse the JSON to extract the "topics" field
+    try:
+        parsed_response = json.loads(ai_response)
+        topics = parsed_response.get('topics', [])
+    except json.JSONDecodeError as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to parse JSON response: {e}"
+        )
+
+    return topics
 
