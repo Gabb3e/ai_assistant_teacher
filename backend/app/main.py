@@ -9,6 +9,7 @@ from models.models import ChatRequest, ChatResponse, QuizModel, QuizQuestionMode
 from schemas.schemas import ChatRequestModel, ChatResponseModel, QuizCreateResponseModel, QuizCreateRequestModel, QuestionModel, UserCreate, UserBase
 from openai import OpenAI
 from auth_endpoints import auth_router
+from user_endpoints import user_router
 from quiz_onb_endpoints import quiz_router
 import httpx
 from typing import List, Dict, Any
@@ -37,6 +38,8 @@ app = FastAPI(lifespan=lifespan)
 
 
 app.include_router(quiz_router) #So routes works in quiz_onb_endpoints
+
+app.include_router(user_router)
 
 app.include_router(auth_router) #So routes works in auth_endpoints
 print("auth_router", auth_router)
