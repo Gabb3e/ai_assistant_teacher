@@ -10,10 +10,12 @@ const QuestionPage = () => {
   const [selectedAnswer, setSelectedAnswer] = useState('');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [quizId, setQuizId] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     // Fetch the quiz data from the backend
-    const fetchQuiz = async () => {
+    const createQuiz = async () => {
       try {
         const response = await fetch('http://localhost:8000/quiz/create', {
           method: 'POST',
@@ -27,20 +29,58 @@ const QuestionPage = () => {
           }),
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          setQuizQuestions(data.questions);
-          setLoading(false);
-        } else {
-          console.error('Failed to fetch quiz');
+        if (!response.ok) {
+          throw new Error(`Failed to create quiz. Status: ${response.status}`);
         }
+
+        const data = await response.json();
+        console.log('Quiz created with data:', data);
+
+        // Ensure data contains quiz_id and questions
+        if (!data.quiz_id || !data.questions) {
+          throw new Error('Invalid response format from quiz creation.');
+        }
+
+        setQuizId(data.quiz_id); // Set quizId for further fetching
+
       } catch (error) {
-        console.error('Error fetching quiz:', error);
+        console.error('Error during quiz creation:', error);
+        // Optionally set an error state here to display an error message in UI
+        setLoading(false); // Stop loading if there's an error
       }
     };
 
-    fetchQuiz();
-  }, [topic, questionCount, difficulty]);
+  createQuiz();
+}, [topic, questionCount, difficulty]);
+
+  useEffect(() => {
+    // Fetch the quiz questions using the quizId
+    const fetchQuizQuestions = async () => {
+      if (!quizId) return; // Avoid making API calls when quizId is null
+      
+      try {
+        const response = await fetch(`http://localhost:8000/quiz/${quizId}/questions`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch quiz questions. Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (!data.questions || data.questions.length === 0) {
+          throw new Error('No quiz questions found.');
+        }
+
+        setQuizQuestions(data.questions);
+        setLoading(false); // Stop loading after fetching questions
+      } catch (err) {
+        console.error('Error fetching quiz questions:', err);
+        setError('Failed to fetch quiz questions. Please try again.');
+        setLoading(false);
+      }
+    };
+    if (quizId) {
+      fetchQuizQuestions();
+    }    
+    }, [quizId]); 
 
   const handleNext = () => {
     if (currentQuestionIndex < quizQuestions.length - 1) {
@@ -54,6 +94,10 @@ const QuestionPage = () => {
   const handleAnswerSelect = (answer) => {
     setSelectedAnswer(answer);
   };
+
+  if (error) {
+    return <div>{error}</div>;
+  }
 
   if (loading) {
     return <div>Loading quiz...</div>;
@@ -70,8 +114,8 @@ const QuestionPage = () => {
         <div className="flex items-center justify-between mb-8">
           <span className="text-gray-600">Question {currentQuestionIndex + 1} of {quizQuestions.length}</span>
           <div className="flex space-x-2 w-full ml-4">
-            <div className={`h-1 bg-blue-600 rounded-full w-${currentQuestionIndex + 1}/${quizQuestions.length}`}></div>
-            <div className={`h-1 bg-gray-300 rounded-full w-${quizQuestions.length - currentQuestionIndex - 1}/${quizQuestions.length}`}></div>
+            <div style={{ width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%` }} className="h-1 bg-blue-600 rounded-full"></div>
+            <div style={{ width: `${((quizQuestions.length - currentQuestionIndex - 1) / quizQuestions.length) * 100}%` }} className="h-1 bg-gray-300 rounded-full"></div>
           </div>
         </div>
 
