@@ -11,6 +11,7 @@ import Login from './Login';
 import Register from './Register';
 import SubjectSelection from './SubjectSelection';
 import Onboarding from './Onboarding';
+import Profile from './Profile';
 
 
 
@@ -32,6 +33,7 @@ function App() {
         <Route path="/Register" element={<Register />} />
         <Route path="/Nav" element={<Register />} />
         <Route path="/SubjectSelection" element={<SubjectSelection />} />
+        <Route path="/Profile" element={<Profile />} />
       </Routes>
     </Router>
   );
