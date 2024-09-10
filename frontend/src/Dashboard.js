@@ -1,53 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import { useNavigate } from 'react-router-dom'; 
+import Sidebar from './components/SideBar';
+import LoginStreak from './components/LoginStreak';
 
-const Sidebar = ({user}) => {
-  console.log(user);
-  if (user)
-  {
-  return (
-    <aside className="bg-white p-8 min-h-screen shadow-lg">
-      <div className="mb-10">
-        <img
-          src="https://via.placeholder.com/150"
-          alt="User Avatar"
-          className="rounded-full w-20 h-20 mb-4"
-        />
-        <h3 className="text-xl font-bold">{user.first_name} {user.last_name}</h3>
-        <p className="text-sm text-gray-500">{user.email}</p>
-      </div>
-      <nav>
-        <ul>
-          <li className="mb-4">
-            <a href="/" className="text-lg font-semibold text-gray-700 hover:text-blue-600">
-              Home
-            </a>
-          </li>
-          <li className="mb-4">
-            <a href="/analytics" className="text-lg font-semibold text-gray-700 hover:text-blue-600">
-              Quizzes
-            </a>
-          </li>
-          <li className="mb-4">
-            <a href="/task-list" className="text-lg font-semibold text-gray-700 hover:text-blue-600">
-              Progress
-            </a>
-          </li>
-          <li className="mb-4">
-            <a href="/tracking" className="text-lg font-semibold text-gray-700 hover:text-blue-600">
-              Profile
-            </a>
-          </li>
-          <li className="mb-4">
-            <a href="/login" className="text-lg font-semibold text-gray-700 hover:text-blue-600">
-              Logout
-            </a>
-          </li>
-        </ul>
-      </nav>
-    </aside>
-  );}
-};
+
 
 const Dashboard = () => {
   const navigate = useNavigate(); // useNavigate hook for navigation
@@ -117,7 +73,7 @@ if (user)
             onClick={goToTopicSelection} // onClick handler for navigation to TopicSelection
             className="bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition"
           >
-            Add New Topic
+            Add New Subject // Don´t go to quiz, just add a new subject to user.
           </button>
         </header>
 
@@ -187,19 +143,7 @@ if (user)
         </section>
 
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-          <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-            <h3 className="text-xl font-semibold text-gray-700 mb-4">Login Streak</h3>
-            <p className="text-3xl font-bold text-purple-600">{user.login_streak} days</p>
-            <p className="text-gray-500 mt-2">Total days logged in consecutively</p>
-            <ul className="mt-4 space-y-2">
-            {Array.from({ length: user.login_streak }).map((_, index) => (
-          <li key={index} className="bg-gray-100 p-4 rounded-lg flex justify-between items-center">
-            <span className="text-gray-700 font-semibold">Day {index + 1}: Logged in</span>
-            <span className="text-gray-500">{'>'}</span>
-          </li>
-        ))}
-            </ul>
-          </div>
+          <LoginStreak user={user}/>
 
           <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
             <h3 className="text-xl font-semibold text-gray-700 mb-4">Quiz Progress</h3>
