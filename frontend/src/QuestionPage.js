@@ -67,13 +67,13 @@ const QuestionPage = () => {
       <h1 className="text-4xl font-bold text-black mb-8">Study Assistant</h1>
       <div className="w-full max-w-3xl mx-auto">
         {/* Progress Bar */}
-        <div className="flex items-center justify-between mb-8">
-          <span className="text-gray-600">Question {currentQuestionIndex + 1} of {quizQuestions.length}</span>
-          <div className="flex space-x-2 w-full ml-4">
-            <div className={`h-1 bg-blue-600 rounded-full w-${currentQuestionIndex + 1}/${quizQuestions.length}`}></div>
-            <div className={`h-1 bg-gray-300 rounded-full w-${quizQuestions.length - currentQuestionIndex - 1}/${quizQuestions.length}`}></div>
-          </div>
+        <div className="flex items-center mb-8">
+        <span className="text-gray-600 whitespace-nowrap">Question {currentQuestionIndex + 1} of {quizQuestions.length}</span>
+        <div className="flex-grow flex space-x-2 w-full ml-4">
+          <div className={`h-1 bg-blue-600 rounded-full w-${(currentQuestionIndex + 1) / quizQuestions.length * 100}%`}></div>
+          <div className={`h-1 bg-gray-300 rounded-full w-${(quizQuestions.length - currentQuestionIndex - 1) / quizQuestions.length * 100}%`}></div>
         </div>
+      </div>
 
         {/* Question Section */}
         <div className="text-center mb-8">
