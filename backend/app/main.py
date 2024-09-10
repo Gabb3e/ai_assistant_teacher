@@ -15,6 +15,7 @@ from typing import List, Dict, Any
 from uuid import uuid4
 import os
 import re
+import json
 
 # from app.auth import get_current_user  # Assuming you have an auth dependency
 
@@ -207,35 +208,30 @@ async def create_quiz(
 
         # Here, you would typically parse `ai_response` to extract questions and options
         # Assuming `ai_response` is structured correctly as a JSON-like response:
-        questions = parse_quiz_response(ai_response)  # You need to define this function
-        print(questions)
-
-        # Check if questions are parsed correctly
+        questions = parse_quiz_response(ai_response)
         if not questions or not isinstance(questions, list):
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to parse quiz questions."
             )
+        print(questions)
+
          # Save the generated quiz to the database
         db_quiz = QuizModel(topic=request.topic, num_questions=request.num_questions, difficulty=request.difficulty)
         db.add(db_quiz)
         db.commit()
         db.refresh(db_quiz)
 
+        # Save each question
         for q in questions:
-            if 'question' not in q or 'options' not in q or 'correct_answer' not in q:
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="Malformed question data."
-                )
             db_question = QuizQuestionModel(
                 quiz_id=db_quiz.id,
                 question=q['question'],
-                options=q['options'],
+                options=json.dumps(q['options']),  # Store options as JSON
                 correct_answer=q['correct_answer']
             )
             db.add(db_question)
-            db.commit()
+        db.commit()
         
         # Create a response model to return
         response = QuizCreateResponseModel(
@@ -254,6 +250,42 @@ async def create_quiz(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
         )
+
+@app.get("/quiz/{quiz_id}/questions", response_model=QuizCreateResponseModel, tags=["quiz"])
+async def get_quiz(quiz_id: int, db: Session = Depends(get_db)):
+    # Fetch the quiz from the database
+    db_quiz = db.query(QuizModel).filter(QuizModel.id == quiz_id).first()
+
+    if not db_quiz:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Quiz with id {quiz_id} not found."
+        )
+
+    # Fetch all questions related to the quiz
+    db_questions = db.query(QuizQuestionModel).filter(QuizQuestionModel.quiz_id == quiz_id).all()
+
+    if not db_questions:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No questions found for this quiz.")
+
+    # Map the database questions to the response model
+    questions = [
+        QuestionModel(
+            question=q.question,
+            options=json.loads(q.options),  # Parse JSON options
+            correct_answer=q.correct_answer
+        )
+        for q in db_questions
+    ]
+
+    response = QuizCreateResponseModel(
+        quiz_id=db_quiz.id,
+        questions=questions
+    )
+
+    return response
+
+
 
 # This endpoint will allow the user to continue the conversation with the AI. It will handle back-and-forth communication.
 @app.post("/chat/continue", response_model=ChatResponseModel, tags=["chat"])
