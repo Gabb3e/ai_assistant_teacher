@@ -52,8 +52,8 @@ const Sidebar = ({user}) => {
 const Dashboard = () => {
   const navigate = useNavigate(); // useNavigate hook for navigation
 
-  const startQuiz = (subject) => {
-    navigate(`/quiz/${subject}`);
+  const startQuiz = () => {
+    navigate('/SubjectSelection');
   };
 
   const goToTopicSelection = () => {
