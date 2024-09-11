@@ -12,9 +12,13 @@ const Login = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    // Normalize the email to lowercase
+    const updatedValue = name === 'username' ? value.toLowerCase() : value;
+
     setLoginData({
       ...loginData,
-      [name]: value
+      [name]: updatedValue
     });
   };
 
