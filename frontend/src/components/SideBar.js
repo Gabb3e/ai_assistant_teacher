@@ -24,8 +24,8 @@ import { useNavigate } from 'react-router-dom';
               </a>
             </li>
             <li className="mb-4">
-              <a href="/analytics" className="text-lg font-semibold text-gray-700 hover:text-blue-600">
-                Quizzes
+              <a href="/SubjectSelection" className="text-lg font-semibold text-gray-700 hover:text-blue-600">
+                Quizz
               </a>
             </li>
             <li className="mb-4">

@@ -1,5 +1,5 @@
 from typing import Optional
-from sqlalchemy import create_engine, Column, Integer, String, Boolean, BigInteger, TIMESTAMP, Text, ForeignKey, Numeric, DateTime
+from sqlalchemy import create_engine, Column, Integer, String, Boolean, BigInteger, TIMESTAMP, Text, ForeignKey, Numeric, DateTime, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import DeclarativeBase, sessionmaker, relationship, Mapped, mapped_column
 from sqlalchemy.sql import func
@@ -8,7 +8,11 @@ from datetime import datetime
 class Base(DeclarativeBase):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, index=True)
 
-
+user_likes_subject = Table(
+    'user_likes_subject', Base.metadata,
+    Column('user_id', ForeignKey('users.id'), primary_key=True),
+    Column('subject_id', ForeignKey('subjects.id'), primary_key=True)
+)
 # User Model
 class User(Base):
     __tablename__ = 'users'
@@ -31,15 +35,38 @@ class User(Base):
 
     test_attempts: Mapped[list["TestAttempt"]] = relationship("TestAttempt", back_populates="user")
 
+    # Many-to-Many relationship with Subjects (liked subjects)
+    liked_subjects: Mapped[list["Subject"]] = relationship(
+        "Subject", secondary=user_likes_subject, back_populates="liked_by_users"
+    )
+
 # Subject Model
 class Subject(Base):
     __tablename__ = 'subjects'
 
-    
-    name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(Text)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+
+    # Relationship with topics
+    topics: Mapped[list["Topic"]] = relationship("Topic", back_populates="subject")
 
     tests: Mapped[list["Test"]] = relationship("Test", back_populates="subject")
+
+
+    # Many-to-Many relationship with User (likes)
+    liked_by_users: Mapped[list["User"]] = relationship(
+        "User", secondary=user_likes_subject, back_populates="liked_subjects"
+    )
+class Topic(Base):
+    __tablename__ = 'topics'
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    subject_id: Mapped[int] = mapped_column(ForeignKey('subjects.id'), nullable=False)
+
+    subject: Mapped["Subject"] = relationship("Subject", back_populates="topics")
+    tests: Mapped[list["Test"]] = relationship("Test", back_populates="topic")
+
 
 # Test Model
 class Test(Base):
@@ -49,10 +76,12 @@ class Test(Base):
     subject_id: Mapped[int] = mapped_column(ForeignKey('subjects.id'), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     difficulty: Mapped[Optional[str]] = mapped_column(String(50))
-    time_limit: Mapped[Optional[int]] = mapped_column(Integer)  # Time in minutes
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default=func.now())
-
+    topic_id: Mapped[int] = mapped_column(ForeignKey('topics.id'), nullable=False)
+    
+    topic: Mapped["Topic"] = relationship("Topic", back_populates="tests")
     subject: Mapped["Subject"] = relationship("Subject", back_populates="tests")
+
     questions: Mapped[list["Question"]] = relationship("Question", back_populates="test")
     test_attempts: Mapped[list["TestAttempt"]] = relationship("TestAttempt", back_populates="test")
 
@@ -65,7 +94,7 @@ class Question(Base):
     correct_answer: Mapped[Optional[str]] = mapped_column(Text)
     points: Mapped[float] = mapped_column(Numeric, nullable=False)
 
-    test: Mapped["Test"] = relationship("Test", back_populates="questions")
+    test: Mapped["Test"] = relationship("Test", back_populates="questions")  
     options: Mapped[list["QuestionOption"]] = relationship("QuestionOption", back_populates="question")
     submitted_answers: Mapped[list["SubmittedAnswer"]] = relationship("SubmittedAnswer", back_populates="question")
 

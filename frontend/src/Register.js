@@ -19,9 +19,13 @@ const Register = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    // Convert email to lowercase for normalization
+    const updatedValue = name === 'email' ? value.toLowerCase() : value;
+
     setFormData({
       ...formData,
-      [name]: value
+      [name]: updatedValue
     });
   };
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from './AppNavbar';
+import landingPage from './LandingPage';
 
 const TopicSelection = () => {
   const navigate = useNavigate();
@@ -72,7 +73,7 @@ const TopicSelection = () => {
       <h1 className="text-4xl font-bold text-black mb-8">Quiz</h1>
       <div className="w-full max-w-2xl mx-auto">
         {loading ? (
-          <p>Loading topics...</p> // Show loading state while fetching data
+          <p><landingPage/></p> // Show loading state while fetching data
         ) : (
           <>
             <div className="mb-8">
