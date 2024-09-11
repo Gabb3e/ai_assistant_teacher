@@ -1,14 +1,14 @@
 from openai import OpenAI
 from pydantic import BaseModel  
-from db_setup import init_db, get_db, engine
+from app.db_setup import init_db, get_db, engine
 import os
 from contextlib import asynccontextmanager
 from sqlalchemy.orm import Session, joinedload, selectinload
 from fastapi import FastAPI, HTTPException, Depends, Request, status, APIRouter
 from typing import List, Dict, Any
 from dotenv import load_dotenv
-from schemas.schemas import UserBase, SubjectResponse, SubjectLikeRequest
-from models.models import User, user_likes_subject, Subject, Topic
+from app.schemas.schemas import UserBase, SubjectResponse, SubjectLikeRequest
+from app.models.models import User, user_likes_subject, Subject, Topic
 
 
 

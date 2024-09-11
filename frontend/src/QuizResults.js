@@ -7,7 +7,7 @@ const QuizResults = () => {
   const location = useLocation();
   
   // Assuming the quiz result data is passed via state
-  const { quizQuestions, userAnswers } = location.state || {};
+  const { quizQuestions, userAnswers, topic, questionCount, difficulty } = location.state || {};
 
   useEffect(() => {
     // Debugging output to check if state was passed correctly
@@ -17,7 +17,14 @@ const QuizResults = () => {
   }, [quizQuestions, userAnswers, location.state]);
   
   const handleRetakeQuiz = () => {
-    navigate('/QuestionPage'); // Navigate to retake the quiz
+    // Navigate back to QuestionPage with the original quiz configuration
+    navigate('/QuestionPage', {
+      state: {
+        topic,
+        questionCount,
+        difficulty,
+      },
+    });
   };
 
   const handleDone = () => {
