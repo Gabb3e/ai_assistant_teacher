@@ -18,7 +18,7 @@ const QuizResults = () => {
   
   const handleRetakeQuiz = () => {
     // Navigate back to QuestionPage with the original quiz configuration
-    navigate('/QuestionPage', {
+    navigate('/QuizPage', {
       state: {
         topic,
         questionCount,
@@ -42,7 +42,7 @@ const QuizResults = () => {
   }, 0);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-white">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-white pt-32 pb-16">
       <AppNavbar />
       <h1 className="text-4xl font-bold text-black mb-8">Quiz Results</h1>
       <div className="w-full max-w-3xl mx-auto">

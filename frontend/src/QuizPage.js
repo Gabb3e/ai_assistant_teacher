@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import AppNavbar from './AppNavbar';
 
-const QuestionPage = () => {
+const QuizPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { topic, questionCount, difficulty } = location.state || {};
@@ -181,4 +181,4 @@ const QuestionPage = () => {
   );
 };
 
-export default QuestionPage;
+export default QuizPage;

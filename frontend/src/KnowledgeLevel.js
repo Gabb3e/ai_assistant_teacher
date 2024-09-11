@@ -13,7 +13,7 @@ const KnowledgeLevel = () => {
 
   const handleContinue = () => {
     // Pass subject, topic, question count, and selected level to the next page (QuizPage)
-    navigate('/QuestionPage', { state: { subject, topic, questionCount, difficulty: selectedLevel } });
+    navigate('/QuizPage', { state: { subject, topic, questionCount, difficulty: selectedLevel } });
   };
 
   const handleBack = () => {
