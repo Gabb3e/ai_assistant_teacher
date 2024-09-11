@@ -90,7 +90,7 @@ const QuestionPage = () => {
 
   const handleFinishQuiz = () => {
     // Navigate to QuizResults and pass quizQuestions and userAnswers
-    navigate('/QuizResults', { state: { quizQuestions, userAnswers } });
+    navigate('/QuizResults', { state: { quizQuestions, userAnswers, topic, questionCount, difficulty } });
   };
 
   // If there is an error, display the error message

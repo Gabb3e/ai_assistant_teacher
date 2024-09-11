@@ -8,9 +8,9 @@ from typing import Annotated
 from app.models.models import ChatRequest, ChatResponse, QuizModel, QuizQuestionModel, User, Base
 from app.schemas.schemas import ChatRequestModel, ChatResponseModel, QuizCreateResponseModel, QuizCreateRequestModel, QuestionModel, UserCreate, UserBase
 from openai import OpenAI
-from auth_endpoints import auth_router
-from user_endpoints import user_router
-from quiz_onb_endpoints import quiz_router
+from app.auth_endpoints import auth_router
+from app.user_endpoints import user_router
+from app.quiz_onb_endpoints import quiz_router
 import httpx
 from typing import List, Dict, Any
 from uuid import uuid4
@@ -121,96 +121,6 @@ def parse_quiz_response(ai_response: str):
     except ValueError as e:
         print(f"Error in quiz structure: {e}")
         return []
-
-
-@app.post("/quiz/create", response_model=QuizCreateResponseModel, tags=["quiz"])
-async def create_quiz(
-    request: QuizCreateRequestModel,
-    db: Session = Depends(get_db),
-    api_key: str = Depends(load_api_key),
-):
-    try:
-        prompt = (
-            f"Create a quiz on the topic of '{request.topic}' with {request.num_questions} questions."
-            " Each question should have four distinct answer options."
-            " Mark one correct answer for each question."
-            " Respond in valid JSON format, with each question structured as an object containing 'question', 'options', and 'correct_answer'."
-        )
-
-        if request.difficulty:
-            prompt += f" The difficulty level should be {request.difficulty}."
-
-        # Additional clarification for the AI to return JSON
-        prompt += (
-            " Ensure the response is valid JSON. Example format: "
-            "[{'question': 'What is 2 + 2?', 'options': ['3', '4', '5', '6'], 'correct_answer': '4'}]."
-            " Do not include any explanations or additional text, only return the JSON data."
-        )
-
-        print(f"Generated Prompt: {prompt}")
-
-        # Get AI response
-        completion = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are a helpful teacher who creates well-structured quizzes with multiple-choice questions.",
-                },
-                {"role": "user", "content": prompt},
-            ],
-        )
-
-        ai_response = completion.choices[0].message.content
-        print(f"AI Response: {ai_response}")
-
-        # Parse the AI response to extract questions and options
-        questions = parse_quiz_response(ai_response)
-
-        if not questions or not isinstance(questions, list):
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to parse quiz questions."
-            )
-
-        print(f"Parsed Questions: {questions}")
-
-        # Save the generated quiz to the database
-        db_quiz = QuizModel(topic=request.topic, num_questions=request.num_questions, difficulty=request.difficulty)
-        db.add(db_quiz)
-        db.commit()
-        db.refresh(db_quiz)
-
-        # Save each question
-        for q in questions:
-            db_question = QuizQuestionModel(
-                quiz_id=db_quiz.id,
-                question=q['question'],
-                options=json.dumps(q['options']),  # Store options as JSON
-                correct_answer=q['correct_answer']
-            )
-            db.add(db_question)
-        db.commit()
-
-        # Create a response model to return
-        response = QuizCreateResponseModel(
-            quiz_id=db_quiz.id,
-            questions=[QuestionModel(**q) for q in questions]
-        )
-
-        return response
-
-    except HTTPException as e:
-        raise e  # Rethrow any HTTPExceptions we explicitly raised
-
-    except Exception as e:
-        # Log the error and return a more informative error message
-        print(f"Error during quiz creation: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An error occurred while creating the quiz. Please try again later."
-        )
-
 
 # In-memory store for conversations (for simplicity)
 conversations: Dict[str, List[Dict[str, str]]] = {}
