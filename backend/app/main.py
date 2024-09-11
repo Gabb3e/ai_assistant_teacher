@@ -60,77 +60,154 @@ def load_api_key() -> str:
         )
     return api_key
 
-def parse_quiz_response(ai_response: str) -> List[Dict[str, Any]]:
-    # Split response into blocks of questions using regex for "Question" pattern.
-    question_blocks = re.split(r'\*\*Question\s*\d+:\*\*', ai_response.strip())
-
-    questions = []
-
-    # Loop over each block, skipping the introductory block (block 0)
-    for idx, block in enumerate(question_blocks):
-        block = block.strip()  # Remove extra whitespace
-
-        # Skip the introductory or any non-question blocks
-        if idx == 0 or not block:
-            continue
-
-        question_dict = {}
-        print(f"Processing block {idx}: {block}")  # Debugging line to inspect each block
-
-        # Try to extract question text by looking for options (e.g., "a)")
-        question_match = re.search(r'(.+?)\n[aA]\)', block, re.S)
-        if question_match:
-            question_dict['question'] = question_match.group(1).strip()
-        else:
-            # Log or raise an error if the question text cannot be found
-            raise ValueError(f"Question text not found in block {idx}: {block}")
-
-        # Extract options (a) to d), supporting both lowercase and uppercase letters
-        options_match = re.findall(r'[a-dA-D]\)\s*(.+)', block)
-        if options_match:
-            question_dict['options'] = [option.strip() for option in options_match]
-        else:
-            # If no options are found, raise an error
-            raise ValueError(f"Options not found for question {idx}: {question_dict.get('question', 'Unknown')}")
-
-        questions.append(question_dict)
-
-    # Print the full response for debugging purposes
-    print(f"Full AI Response: {ai_response}")  # This will print the AI response for inspection
-
-    # Extract the answers key from the response
-    answer_key_match = re.search(r'(###\s*Answers?|Answer\s*Key|Answers?)\s*[:\n-]?\s*(.+)', ai_response, re.S)
-    if answer_key_match:
-        answer_key_block = answer_key_match.group(2).strip()
-
-        # Debugging: Print the extracted answer key
-        print(f"Extracted Answer Key Block: {answer_key_block}")
-
-        # Extract each answer using regex for "number) Answer"
-        answer_matches = re.findall(r'(\d+)[\.\)]?\s*([A-Da-d])[\)\.]?\s*', answer_key_block)
-        if answer_matches:
-            for idx, (question_num, correct_option) in enumerate(answer_matches):
-                correct_index = ['a', 'b', 'c', 'd', 'A', 'B', 'C', 'D'].index(correct_option)
-                correct_index = correct_index % 4  # Normalize to 0-3 for lowercase and uppercase
-                # Assign the correct answer to the corresponding question
-                if idx < len(questions):
-                    questions[idx]['correct_answer'] = questions[idx]['options'][correct_index]
-                else:
-                    raise ValueError(f"Answer provided for question {idx+1} that does not exist.")
-        else:
-            raise ValueError("No valid answers found in the answer key.")
+def extract_json_from_response(ai_response: str):
+    """
+    Attempts to extract the JSON-like part of the AI response using regular expressions.
+    This function looks for the first valid JSON array in the response.
+    """
+    # Regular expression to extract JSON array starting with '[' and ending with ']'
+    match = re.search(r'(\[.*\])', ai_response, re.DOTALL)
+    if match:
+        return match.group(1)  # Return the matched JSON content
     else:
-        # Print AI response for further investigation
-        print(f"AI Response when searching for answer key: {ai_response}")
-        raise ValueError("Answer key not found in the AI response.")
+        print("No valid JSON array found in the AI response.")
+        return None
 
-    return questions
+def parse_quiz_response(ai_response: str):
+    """
+    Parse the AI response to extract questions, each with 'question', 'options', and 'correct_answer'.
+    This function tries to extract the JSON part from the response first.
+    """
+    try:
+        # Extract JSON from AI response if possible
+        json_content = extract_json_from_response(ai_response)
+        if not json_content:
+            print("AI response does not contain valid JSON.")
+            return []
 
-@app.post("/reset-db", status_code=200, tags=["Database"])
-def reset_database():
-    Base.metadata.drop_all(bind=engine)
-    Base.metadata.create_all(bind=engine)
-    return {"message": "Database was successfully reset."}
+        # Attempt to parse the extracted JSON
+        quiz_data = json.loads(json_content)
+        questions = quiz_data if isinstance(quiz_data, list) else []
+
+        parsed_questions = []
+        for question in questions:
+            correct_answer = (
+                question.get('correct_answer') or
+                question.get('answer') or
+                question.get('correctOption') or
+                None
+            )
+
+            # Ensure we have the correct answer and required keys
+            if not correct_answer or 'question' not in question or 'options' not in question:
+                print(f"Invalid question structure or missing answer: {question}")
+                raise ValueError("Question is missing necessary fields or correct answer.")
+
+            parsed_questions.append({
+                'question': question['question'],
+                'options': question['options'],
+                'correct_answer': correct_answer
+            })
+
+        return parsed_questions
+
+    except json.JSONDecodeError:
+        print("Failed to parse extracted JSON. It was not valid.")
+        return []
+
+    except ValueError as e:
+        print(f"Error in quiz structure: {e}")
+        return []
+
+
+@app.post("/quiz/create", response_model=QuizCreateResponseModel, tags=["quiz"])
+async def create_quiz(
+    request: QuizCreateRequestModel,
+    db: Session = Depends(get_db),
+    api_key: str = Depends(load_api_key),
+):
+    try:
+        prompt = (
+            f"Create a quiz on the topic of '{request.topic}' with {request.num_questions} questions."
+            " Each question should have four distinct answer options."
+            " Mark one correct answer for each question."
+            " Respond in valid JSON format, with each question structured as an object containing 'question', 'options', and 'correct_answer'."
+        )
+
+        if request.difficulty:
+            prompt += f" The difficulty level should be {request.difficulty}."
+
+        # Additional clarification for the AI to return JSON
+        prompt += (
+            " Ensure the response is valid JSON. Example format: "
+            "[{'question': 'What is 2 + 2?', 'options': ['3', '4', '5', '6'], 'correct_answer': '4'}]."
+            " Do not include any explanations or additional text, only return the JSON data."
+        )
+
+        print(f"Generated Prompt: {prompt}")
+
+        # Get AI response
+        completion = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a helpful teacher who creates well-structured quizzes with multiple-choice questions.",
+                },
+                {"role": "user", "content": prompt},
+            ],
+        )
+
+        ai_response = completion.choices[0].message.content
+        print(f"AI Response: {ai_response}")
+
+        # Parse the AI response to extract questions and options
+        questions = parse_quiz_response(ai_response)
+
+        if not questions or not isinstance(questions, list):
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to parse quiz questions."
+            )
+
+        print(f"Parsed Questions: {questions}")
+
+        # Save the generated quiz to the database
+        db_quiz = QuizModel(topic=request.topic, num_questions=request.num_questions, difficulty=request.difficulty)
+        db.add(db_quiz)
+        db.commit()
+        db.refresh(db_quiz)
+
+        # Save each question
+        for q in questions:
+            db_question = QuizQuestionModel(
+                quiz_id=db_quiz.id,
+                question=q['question'],
+                options=json.dumps(q['options']),  # Store options as JSON
+                correct_answer=q['correct_answer']
+            )
+            db.add(db_question)
+        db.commit()
+
+        # Create a response model to return
+        response = QuizCreateResponseModel(
+            quiz_id=db_quiz.id,
+            questions=[QuestionModel(**q) for q in questions]
+        )
+
+        return response
+
+    except HTTPException as e:
+        raise e  # Rethrow any HTTPExceptions we explicitly raised
+
+    except Exception as e:
+        # Log the error and return a more informative error message
+        print(f"Error during quiz creation: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while creating the quiz. Please try again later."
+        )
+
 
 # In-memory store for conversations (for simplicity)
 conversations: Dict[str, List[Dict[str, str]]] = {}
@@ -139,9 +216,13 @@ client = OpenAI()
 
 #################################   endpoints   #################################
 
+@app.post("/reset-db", status_code=200, tags=["Database"])
+def reset_database():
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
+    return {"message": "Database was successfully reset."}
 
 # This endpoint will receive the user's response from the front-end, send it to the LLM, and return the AI's response.
-
 
 @app.post("/chat", response_model=ChatResponseModel, tags=["chat"])
 async def chat_with_ai(
@@ -188,16 +269,33 @@ async def create_quiz(
     api_key: str = Depends(load_api_key),  # Injecting API key using a dependency
 ):
     try:
-        prompt = f"Create a quiz with {request.num_questions} questions on the topic of {request.topic}."
+        prompt = (
+            f"Create a quiz on the topic of '{request.topic}' with {request.num_questions} questions."
+            " Each question should have four distinct answer options."
+            " Mark one correct answer for each question."
+            " Respond in valid JSON format, with each question structured as an object containing 'question', 'options', and 'correct_answer'."
+)
+        
         if request.difficulty:
             prompt += f" The difficulty level should be {request.difficulty}."
+
+        # Add more guidance to ensure the AI provides as much detail as possible.
+        prompt += (
+            " Ensure that the response is formatted as a JSON array of questions. Each question should be an object with keys: "
+            "'question' (string), 'options' (array of strings), and 'correct_answer' (string)."
+            " Example: [{'question': 'What is 2 + 2?', 'options': ['3', '4', '5', '6'], 'correct_answer': '4'}]."
+            " Return only valid JSON with no additional explanations or text."
+)
+
+        # Logging the final prompt
+        print(f"Generated Prompt: {prompt}")
 
         completion = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a helpfull teacher who creates quizes for the choosen topic with the choosen amount of questions.",
+                    "content": "You are a helpful teacher who creates well-structured quizzes with multiple-choice questions.",
                 },
                 {"role": "user", "content": prompt},
             ],
@@ -214,9 +312,9 @@ async def create_quiz(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to parse quiz questions."
             )
-        print(questions)
+        print(f"Parsed Questions: {questions}")
 
-         # Save the generated quiz to the database
+        # Save the generated quiz to the database
         db_quiz = QuizModel(topic=request.topic, num_questions=request.num_questions, difficulty=request.difficulty)
         db.add(db_quiz)
         db.commit()
@@ -232,7 +330,7 @@ async def create_quiz(
             )
             db.add(db_question)
         db.commit()
-        
+
         # Create a response model to return
         response = QuizCreateResponseModel(
             quiz_id=db_quiz.id,
@@ -241,14 +339,15 @@ async def create_quiz(
 
         return response
 
-    except httpx.RequestError as e:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e)
-        )
+    except HTTPException as e:
+        raise e  # Rethrow any HTTPExceptions we explicitly raised
 
     except Exception as e:
+        # Log the error and return a more informative error message
+        print(f"Error during quiz creation: {str(e)}")
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while creating the quiz. Please try again later."
         )
 
 @app.get("/quiz/{quiz_id}/questions", response_model=QuizCreateResponseModel, tags=["quiz"])

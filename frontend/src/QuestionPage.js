@@ -1,20 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import AppNavbar from './AppNavbar';
-// work in progress
+
 const QuestionPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { subject, topic, questionCount, difficulty } = location.state || {};
+  const { topic, questionCount, difficulty } = location.state || {};
   const [quizQuestions, setQuizQuestions] = useState([]);
   const [selectedAnswer, setSelectedAnswer] = useState('');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [quizId, setQuizId] = useState(null);
   const [error, setError] = useState(null);
+  const [userAnswers, setUserAnswers] = useState([]);
 
+  // Fetch the quiz data
   useEffect(() => {
-    // Fetch the quiz data from the backend
     const createQuiz = async () => {
       try {
         const response = await fetch('http://localhost:8000/quiz/create', {
@@ -34,30 +35,21 @@ const QuestionPage = () => {
         }
 
         const data = await response.json();
-        console.log('Quiz created with data:', data);
-
-        // Ensure data contains quiz_id and questions
-        if (!data.quiz_id || !data.questions) {
-          throw new Error('Invalid response format from quiz creation.');
-        }
-
-        setQuizId(data.quiz_id); // Set quizId for further fetching
-
-      } catch (error) {
-        console.error('Error during quiz creation:', error);
-        // Optionally set an error state here to display an error message in UI
-        setLoading(false); // Stop loading if there's an error
+        setQuizId(data.quiz_id);
+      } catch (err) {
+        console.error('Error creating quiz:', err);
+        setError('Failed to create quiz. Please try again.');
+        setLoading(false);
       }
     };
 
-  createQuiz();
-}, [topic, questionCount, difficulty]);
+    createQuiz();
+  }, [topic, questionCount, difficulty]);
 
   useEffect(() => {
-    // Fetch the quiz questions using the quizId
     const fetchQuizQuestions = async () => {
-      if (!quizId) return; // Avoid making API calls when quizId is null
-      
+      if (!quizId) return;
+
       try {
         const response = await fetch(`http://localhost:8000/quiz/${quizId}/questions`);
         if (!response.ok) {
@@ -65,45 +57,59 @@ const QuestionPage = () => {
         }
 
         const data = await response.json();
-        if (!data.questions || data.questions.length === 0) {
-          throw new Error('No quiz questions found.');
-        }
-
         setQuizQuestions(data.questions);
-        setLoading(false); // Stop loading after fetching questions
+        setLoading(false);
       } catch (err) {
         console.error('Error fetching quiz questions:', err);
         setError('Failed to fetch quiz questions. Please try again.');
         setLoading(false);
       }
     };
+
     if (quizId) {
       fetchQuizQuestions();
-    }    
-    }, [quizId]); 
+    }
+  }, [quizId]);
+
+  const handleAnswerSelect = (answer) => {
+    setSelectedAnswer(answer);
+    const updatedAnswers = [...userAnswers];
+    updatedAnswers[currentQuestionIndex] = answer;
+    setUserAnswers(updatedAnswers);
+  };
 
   const handleNext = () => {
     if (currentQuestionIndex < quizQuestions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
-      setSelectedAnswer('');
+      setSelectedAnswer('');  // Reset selected answer for the next question
     } else {
-      navigate('/QuizResults', { state: { quizQuestions } });
+      // When it's the last question, finish the quiz and navigate to results
+      handleFinishQuiz();
     }
   };
 
-  const handleAnswerSelect = (answer) => {
-    setSelectedAnswer(answer);
+  const handleFinishQuiz = () => {
+    // Navigate to QuizResults and pass quizQuestions and userAnswers
+    navigate('/QuizResults', { state: { quizQuestions, userAnswers } });
   };
 
+  // If there is an error, display the error message
   if (error) {
     return <div>{error}</div>;
   }
 
+  // Show loading spinner or message while quiz is being fetched
   if (loading) {
     return <div>Loading quiz...</div>;
   }
 
+  // Get the current question
   const currentQuestion = quizQuestions[currentQuestionIndex];
+
+  // Guard against the case where currentQuestion might be undefined
+  if (!currentQuestion) {
+    return <div>Invalid question data.</div>;
+  }
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-white">
@@ -112,10 +118,22 @@ const QuestionPage = () => {
       <div className="w-full max-w-3xl mx-auto">
         {/* Progress Bar */}
         <div className="flex items-center justify-between mb-8">
-          <span className="text-gray-600">Question {currentQuestionIndex + 1} of {quizQuestions.length}</span>
+          <span className="text-gray-600">
+            Question {currentQuestionIndex + 1} of {quizQuestions.length}
+          </span>
           <div className="flex space-x-2 w-full ml-4">
-            <div style={{ width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%` }} className="h-1 bg-blue-600 rounded-full"></div>
-            <div style={{ width: `${((quizQuestions.length - currentQuestionIndex - 1) / quizQuestions.length) * 100}%` }} className="h-1 bg-gray-300 rounded-full"></div>
+            <div
+              style={{
+                width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%`,
+              }}
+              className="h-1 bg-blue-600 rounded-full"
+            ></div>
+            <div
+              style={{
+                width: `${((quizQuestions.length - currentQuestionIndex - 1) / quizQuestions.length) * 100}%`,
+              }}
+              className="h-1 bg-gray-300 rounded-full"
+            ></div>
           </div>
         </div>
 
@@ -143,11 +161,17 @@ const QuestionPage = () => {
 
         {/* Navigation Buttons */}
         <div className="flex justify-between">
-          <button className="text-gray-500" disabled={currentQuestionIndex === 0}>Back</button>
+          <button
+            className="text-gray-500"
+            disabled={currentQuestionIndex === 0}
+            onClick={() => setCurrentQuestionIndex(currentQuestionIndex - 1)}
+          >
+            Back
+          </button>
           <button
             onClick={handleNext}
             className="bg-blue-600 text-white py-2 px-6 rounded-lg"
-            disabled={!selectedAnswer} // Disable until an answer is selected
+            disabled={!selectedAnswer}
           >
             {currentQuestionIndex < quizQuestions.length - 1 ? 'Next →' : 'Finish Quiz'}
           </button>
