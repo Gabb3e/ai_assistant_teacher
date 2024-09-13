@@ -170,7 +170,7 @@ const QuizPage = () => {
           </button>
           <button
             onClick={handleNext}
-            className="bg-blue-600 text-white py-2 px-6 rounded-lg"
+            className="bg-gray-900 text-white py-2 px-6 rounded-lg"
             disabled={!selectedAnswer}
           >
             {currentQuestionIndex < quizQuestions.length - 1 ? 'Next →' : 'Finish Quiz'}

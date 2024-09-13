@@ -138,7 +138,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="flex bg-white min-h-screen">
+    <div className="flex bg-slate-100 min-h-screen">
       <Sidebar user={user} />
       <main className="flex-1 p-8">
         <header className="flex justify-between items-center mb-12">
@@ -207,8 +207,6 @@ const Dashboard = () => {
               const quizButtonColors = [
                 "bg-cyan-500 hover:bg-blue-700 text-white",
                 "bg-sky-500 hover:bg-blue-700 text-white",
-                "bg-blue-500 hover:bg-blue-700 text-white",
-                "bg-blue-600 hover:bg-blue-700 text-white",
               ]; //Quick fix for the grids, if adding something on the right side of the screen, the grid will be broken.
 
               // Calculate the button color using the index
@@ -218,7 +216,7 @@ const Dashboard = () => {
               return (
                 <div
                   key={subject.id}
-                  className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow"
+                  className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow "
                 >
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="text-2xl font-semibold text-slate-900 rounded-lg px-2">
@@ -238,10 +236,10 @@ const Dashboard = () => {
                       Take a quiz!
                     </button>
                     <button className="w-full bg-gray-100 text-gray-700 py-3 rounded-lg hover:bg-gray-200 transition">
-                      Learning Path
-                    </button>
-                    <button className="w-full bg-gray-100 text-gray-700 py-3 rounded-lg hover:bg-gray-200 transition">
                       AI Teacher
+                    </button>
+                    <button className="w-full bg-white text-gray-700 py-3 rounded-lg hover:bg-gray-200 transition">
+                      Remove Subject
                     </button>
                   </div>
                 </div>
