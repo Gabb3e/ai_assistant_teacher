@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, status, Request, Query
+from fastapi import FastAPI, HTTPException, Depends, status, Request, Query, File, UploadFile
 from app.db_setup import init_db, get_db, engine
 from contextlib import asynccontextmanager
 from sqlalchemy.orm import Session, joinedload, selectinload
@@ -17,6 +17,9 @@ from uuid import uuid4
 import os
 import re
 import json
+from pydub import AudioSegment
+import speech_recognition as sr
+import io
 
 # from app.auth import get_current_user  # Assuming you have an auth dependency
 
@@ -380,3 +383,76 @@ async def get_users(id: int, db: Session = Depends(get_db)):
         return HTTPException(status_code=404, detail="User not found")
     return {"users": "Successfully fetched users."}
 
+@app.post("/voice-to-text", tags=["voice"])
+async def voice_to_text(file: UploadFile = File(...)):
+    try:
+        # Read the uploaded file
+        contents = await file.read()
+        audio = AudioSegment.from_file(io.BytesIO(contents), format="webm")
+
+        # Convert to WAV (if necessary)
+        audio = audio.set_frame_rate(16000).set_channels(1)
+        wav_data = io.BytesIO()
+        audio.export(wav_data, format="wav")
+        wav_data.seek(0)
+
+        # Perform speech recognition
+        recognizer = sr.Recognizer()
+        with sr.AudioFile(wav_data) as source:
+            audio_data = recognizer.record(source)
+            text = recognizer.recognize_google(audio_data)
+
+        return {"text": text}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/voice-assistant", response_model=ChatResponseModel, tags=["voice"])
+async def voice_assistant(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    api_key: str = Depends(load_api_key),
+):
+    try:
+        # First, convert voice to text
+        contents = await file.read()
+        audio = AudioSegment.from_file(io.BytesIO(contents), format="webm")
+        audio = audio.set_frame_rate(16000).set_channels(1)
+        wav_data = io.BytesIO()
+        audio.export(wav_data, format="wav")
+        wav_data.seek(0)
+
+        recognizer = sr.Recognizer()
+        with sr.AudioFile(wav_data) as source:
+            audio_data = recognizer.record(source)
+            text = recognizer.recognize_google(audio_data)
+
+        # Now, use the text to interact with the AI assistant
+        prompt = (
+            "You are a helpful assistant. Provide guidance and support without giving direct answers. "
+            "Offer relevant information and links when appropriate. The user's question is: " + text
+        )
+
+        completion = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": prompt},
+                {"role": "user", "content": text},
+            ],
+        )
+
+        ai_response = completion.choices[0].message.content
+
+        # Save the response to the database
+        db_chat_response = ChatResponse(ai_response=ai_response)
+        db.add(db_chat_response)
+        db.commit()
+        db.refresh(db_chat_response)
+
+        return ChatResponseModel.from_orm(db_chat_response)
+
+    except ValueError as ve:
+        print(f"ValueError in voice_assistant: {str(ve)}")
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        print(f"Unexpected error in voice_assistant: {str(e)}")
+        raise HTTPException(status_code=500, detail="An unexpected error occurred")
