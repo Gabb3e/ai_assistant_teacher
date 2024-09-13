@@ -1,30 +1,22 @@
 import React from 'react';
 import { Link } from 'react-router-dom';  
 
-const LandingPage = () => {
+const OldLandingPage = () => {
   return (
     <div className="flex flex-col min-h-screen bg-white">
       {/* Navbar */}
-      <nav className="flex justify-between items-center p-1 bg-gray-900 shadow">
-        <div></div> {/* Empty div for alignment */}
-        <div className='pt-6 pr-9'>
+      <nav className="flex justify-between items-center p-1 bg-gray-100 shadow">
+
+        <div className="text-2xl font-bold text-gray-800 py-6 pl-4"> AI Study Assistant</div>
+        <div>
           {/* Use Link to navigate to Login and Register */}
-          <Link to="/Login" className="text-white text-md font-semibold hover:text-gray-900 mr-4">Login</Link>
-          <Link to="/Register" className="bg-blue-600 text-white font-semibold text-md py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300">Sign Up</Link>
+          <Link to="/Login" className="text-gray-600 hover:text-gray-900 mr-4">Login</Link>
+          <Link to="/Register" className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300">Sign Up</Link>
         </div>
       </nav>
 
-      {/* Logo Image */}
-      <div className="flex justify-center items-center bg-gray-900">
-        <img 
-          src="./AI-logo.webp" 
-          alt="Login Illustration" 
-          className="h-30 w-60" 
-        />
-      </div>
-
       {/* Hero Section */}
-      <header className="flex flex-col items-center justify-center text-center bg-gray-900 py-10">
+      <header className="flex flex-col items-center justify-center text-center bg-gray-900 py-20" >
         <h1 className="text-5xl font-bold text-white leading-tight mb-4">Empower Your Learning Journey</h1>
         <p className="text-xl text-white mb-8">
           Personalized study plans, quizzes, and resources tailored to help you excel in your studies.
@@ -71,7 +63,7 @@ const LandingPage = () => {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-20 bg-gray-300">
+      <section className="py-20 bg-blue-100">
         <div className="max-w-6xl mx-auto px-6">
           <h2 className="text-3xl font-bold text-gray-800 text-center mb-12">What Our Users Say</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
@@ -98,9 +90,9 @@ const LandingPage = () => {
           <p className="text-lg mb-8">
             Sign up today and take the first step towards mastering your studies.
           </p>
-          <Link to="/Register" className="bg-blue-600 text-white py-3 px-8 rounded-lg text-lg font-medium hover:bg-blue-700 transition duration-300">
+          <button className="bg-blue-600 text-white py-3 px-8 rounded-lg text-lg font-medium hover:bg-blue-700 transition duration-300">
             Join Now
-          </Link>
+          </button>
         </div>
       </section>
 
@@ -109,7 +101,7 @@ const LandingPage = () => {
         <div className="max-w-6xl mx-auto px-6 flex justify-between">
           <div>
             <div className="text-lg font-bold">Study Assistant</div>
-            <p className="text-gray-400">Empowering students around the world.</p>
+            <p className="text-gray-400" >Empowering students around the world.</p>
           </div>
           <div className="flex space-x-4">
             <a href="#" className="text-gray-400 hover:text-white transition duration-300">
@@ -128,4 +120,4 @@ const LandingPage = () => {
   );
 };
 
-export default LandingPage;
+export default OldLandingPage;
