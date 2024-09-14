@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';  
+import Footer from './Footer';
 
 const LandingPage = () => {
   return (
@@ -105,25 +106,9 @@ const LandingPage = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-6">
-        <div className="max-w-6xl mx-auto px-6 flex justify-between">
-          <div>
-            <div className="text-lg font-bold">Study Assistant</div>
-            <p className="text-gray-400">Empowering students around the world.</p>
-          </div>
-          <div className="flex space-x-4">
-            <a href="#" className="text-gray-400 hover:text-white transition duration-300">
-              <i className="fab fa-facebook"></i>
-            </a>
-            <a href="#" className="text-gray-400 hover:text-white transition duration-300">
-              <i className="fab fa-twitter"></i>
-            </a>
-            <a href="#" className="text-gray-400 hover:text-white transition duration-300">
-              <i className="fab fa-linkedin"></i>
-            </a>
-          </div>
-        </div>
-      </footer>
+      <div>
+        <Footer />
+      </div>
     </div>
   );
 };
