@@ -77,11 +77,13 @@ const TopicSelection = () => {
         ) : (
           <>
             <div className="mb-8">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">Step: 2 of 3</span>
+              <div className="flex justify-center items-center mb-2">
+                <span className="text-gray-600">Step: 2 of 4</span>
               </div>
-              <div className="flex space-x-2 w-full mt-2">
-                <div className="h-1 bg-blue-600 rounded-full w-1/2"></div>
+              <div className="flex space-x-2 w-full justify-center">
+                <div className="h-1 bg-blue-600 rounded-full w-1/4"></div>
+                <div className="h-1 bg-blue-600 rounded-full w-1/4"></div>
+                <div className="h-1 bg-gray-300 rounded-full w-1/4"></div>
                 <div className="h-1 bg-gray-300 rounded-full w-1/4"></div>
               </div>
             </div>
