@@ -174,3 +174,16 @@ class SubjectInSchema(BaseModel):
     subject: str
 
     model_config = ConfigDict(from_attributes=True)
+
+# Pydantic schemas to define request and response structures
+class SubjectLikeRequest(BaseModel):
+    subject_name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SubjectResponse(BaseModel):
+    id: int
+    name: str
+
+    model_config = ConfigDict(from_attributes=True)

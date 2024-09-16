@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from './AppNavbar';
+import landingPage from './LandingPage';
 
 const TopicSelection = () => {
   const navigate = useNavigate();
@@ -72,7 +73,7 @@ const TopicSelection = () => {
       <h1 className="text-4xl font-bold text-black mb-8">Quiz</h1>
       <div className="w-full max-w-2xl mx-auto">
         {loading ? (
-          <p>Loading topics...</p> // Show loading state while fetching data
+          <p><landingPage/></p> // Show loading state while fetching data
         ) : (
           <>
             <div className="mb-8">
@@ -99,7 +100,7 @@ const TopicSelection = () => {
                 <button
                   key={index}
                   onClick={() => handleTopicSelect(topic)}
-                  className={`border border-gray-300 p-4 rounded-lg text-black hover:bg-gray-100 transition duration-300 ${
+                  className={`border border-gray-300 p-4 rounded-lg text-black hover:bg-blue-800 hover:text-white transition duration-300 font-medium ${
                     selectedTopic === topic ? 'bg-blue-600 text-white' : ''
                   }`}
                 >
@@ -124,12 +125,12 @@ const TopicSelection = () => {
               )}
             </div>
             <div className="flex justify-between">
-              <button onClick={handleBack} className="bg-red-300 text-white py-2 px-9 rounded-lg">
+              <button onClick={handleBack} className=" text-black py-2 px-9 rounded-lg hover:bg-gray-100">
                 Back
               </button>
               <button
                 onClick={handleContinue}
-                className="bg-blue-600 text-white py-2 px-6 rounded-lg"
+                className=" text-white py-2 px-6 rounded-lg bg-gray-800 hover:bg-blue-900 transition duration-300"
                 disabled={!selectedTopic && !customTopic} // Disable if no topic or custom topic selected
               >
                 Continue →

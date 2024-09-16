@@ -19,9 +19,13 @@ const Register = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    // Convert email to lowercase for normalization
+    const updatedValue = name === 'email' ? value.toLowerCase() : value;
+
     setFormData({
       ...formData,
-      [name]: value
+      [name]: updatedValue
     });
   };
 
@@ -110,27 +114,23 @@ const Register = () => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-gradient-to-r from-blue-500 to-indigo-600">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-gradient-to-r bg-white">
       {/* Left side with an illustration or branding */}
-      <div className="hidden lg:flex w-full lg:w-1/2 justify-center items-center bg-white">
-        <div className="p-10">
+      <div className="hidden lg:flex w-full lg:w-1/2 justify-center items-start bg-white mt-36">
+        <div className=" bg-white">
           <img
             src="./AI-logo.webp"
             alt="Registration Illustration"
             className="max-w-sm mx-auto"
           />
-          <h2 className="text-4xl font-bold text-gray-800 mt-10">
+          <h2 className="text-4xl font-bold text-gray-800 mt-10 text-center">
             Join the Community
           </h2>
-          <p className="text-lg text-gray-600 mt-4">
-            Access personalized learning paths, track your progress, and achieve
-            your goals with Study Assistant.
-          </p>
         </div>
       </div>
 
       {/* Right side with the registration form */}
-      <div className="flex w-full lg:w-1/2 justify-center items-center bg-gray-100 p-8 lg:p-16">
+      <div className="flex w-full lg:w-1/2 justify-center items-center bg-gray-900 p-8 lg:p-16">
         <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
           <h2 className="text-3xl font-bold text-gray-800 text-center mb-8">
             Create Your Account

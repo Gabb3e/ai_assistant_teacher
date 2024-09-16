@@ -6,7 +6,7 @@ import re
 from fastapi import FastAPI, HTTPException, Depends, Request, status, APIRouter
 from typing import List, Dict, Any
 from dotenv import load_dotenv
-from schemas.schemas import ChatRequestModel, ChatResponseModel, QuizCreateResponseModel, QuizCreateRequestModel, QuestionModel, UserCreate, UserBase, SubjectInSchema
+from app.schemas.schemas import ChatRequestModel, ChatResponseModel, QuizCreateResponseModel, QuizCreateRequestModel, QuestionModel, UserCreate, UserBase, SubjectInSchema
 
 quiz_router = APIRouter(tags=["bizz"])
 

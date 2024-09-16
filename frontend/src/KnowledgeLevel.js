@@ -13,7 +13,7 @@ const KnowledgeLevel = () => {
 
   const handleContinue = () => {
     // Pass subject, topic, question count, and selected level to the next page (QuizPage)
-    navigate('/QuestionPage', { state: { subject, topic, questionCount, difficulty: selectedLevel } });
+    navigate('/QuizPage', { state: { subject, topic, questionCount, difficulty: selectedLevel } });
   };
 
   const handleBack = () => {
@@ -52,7 +52,7 @@ const KnowledgeLevel = () => {
         <div className="grid grid-cols-3 gap-4 mb-8">
           <button
             onClick={() => handleLevelSelect('Beginner')}
-            className={`border border-gray-300 p-4 rounded-lg text-black ${
+            className={`border border-gray-300 p-4 rounded-lg text-black hover:bg-blue-800 hover:text-white font-semibold ${
               selectedLevel === 'Beginner' ? 'bg-blue-600 text-white' : ''
             }`}
           >
@@ -60,7 +60,7 @@ const KnowledgeLevel = () => {
           </button>
           <button
             onClick={() => handleLevelSelect('Intermediate')}
-            className={`border border-gray-300 p-4 rounded-lg text-black ${
+            className={`border border-gray-300 p-4 rounded-lg text-black font-semibold hover:bg-blue-800 hover:text-white ${
               selectedLevel === 'Intermediate' ? 'bg-blue-600 text-white' : ''
             }`}
           >
@@ -68,7 +68,7 @@ const KnowledgeLevel = () => {
           </button>
           <button
             onClick={() => handleLevelSelect('Advanced')}
-            className={`border border-gray-300 p-4 rounded-lg text-black ${
+            className={`border border-gray-300 p-4 rounded-lg text-black font-semibold hover:bg-blue-800 hover:text-white ${
               selectedLevel === 'Advanced' ? 'bg-blue-600 text-white' : ''
             }`}
           >
@@ -81,7 +81,7 @@ const KnowledgeLevel = () => {
           </button>
           <button
             onClick={handleContinue}
-            className="bg-blue-600 text-white py-2 px-6 rounded-lg"
+            className=" text-white py-2 px-6 rounded-lg bg-gray-800 hover:bg-blue-900 transition duration-300"
             disabled={!selectedLevel} // Disable continue if no level is selected
           >
             Continue →

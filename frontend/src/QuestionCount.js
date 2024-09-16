@@ -50,7 +50,7 @@ const QuestionCount = () => {
         <div className="grid grid-cols-3 gap-4 mb-8">
           <button
             onClick={() => handleSelectCount('10')}
-            className={`border border-gray-300 p-4 rounded-lg text-black hover:bg-gray-100 transition duration-300 ${
+            className={`border border-gray-300 p-4 rounded-lg text-black hover:bg-blue-800 hover:text-white transition duration-300 font-medium ${
               selectedCount === '10' ? 'bg-blue-600 text-white' : ''
             }`}
           >
@@ -58,7 +58,7 @@ const QuestionCount = () => {
           </button>
           <button
             onClick={() => handleSelectCount('15')}
-            className={`border border-gray-300 p-4 rounded-lg text-black hover:bg-gray-100 transition duration-300 ${
+            className={`border border-gray-300 p-4 rounded-lg text-black hover:bg-blue-800 hover:text-white transition duration-300 font-medium ${
               selectedCount === '15' ? 'bg-blue-600 text-white' : ''
             }`}
           >
@@ -66,7 +66,7 @@ const QuestionCount = () => {
           </button>
           <button
             onClick={() => handleSelectCount('20')}
-            className={`border border-gray-300 p-4 rounded-lg text-black hover:bg-gray-100 transition duration-300 ${
+            className={`border border-gray-300 p-4 rounded-lg text-black hover:bg-blue-800 hover:text-white transition duration-300 font-medium ${
               selectedCount === '20' ? 'bg-blue-600 text-white' : ''
             }`}
           >
@@ -82,7 +82,7 @@ const QuestionCount = () => {
           </button>
           <button
             onClick={handleContinue}
-            className="bg-blue-600 text-white py-2 px-6 rounded-lg"
+            className=" text-white py-2 px-6 rounded-lg bg-gray-800 hover:bg-blue-900 transition duration-300"
             disabled={!selectedCount} // Disable button if no question count is selected
           >
             Continue →

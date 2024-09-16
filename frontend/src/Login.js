@@ -12,9 +12,13 @@ const Login = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    // Normalize the email to lowercase
+    const updatedValue = name === 'username' ? value.toLowerCase() : value;
+
     setLoginData({
       ...loginData,
-      [name]: value
+      [name]: updatedValue
     });
   };
 
@@ -79,7 +83,7 @@ const Login = () => {
       </div>
 
       {/* Right side with the login form */}
-      <div className="flex w-full lg:w-1/2 justify-center items-center bg-gray-100 p-8 lg:p-16">
+      <div className="flex w-full lg:w-1/2 justify-center items-center bg-gray-900 p-8 lg:p-16">
         <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
           <h2 className="text-3xl font-bold text-gray-800 text-center mb-8">Login to Your Account</h2>
           <form onSubmit={handleSubmit}>

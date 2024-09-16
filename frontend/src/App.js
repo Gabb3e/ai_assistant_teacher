@@ -5,7 +5,7 @@ import Dashboard from './Dashboard';
 import TopicSelection from './TopicSelection';
 import QuestionCount from './QuestionCount';
 import KnowledgeLevel from './KnowledgeLevel';
-import QuestionPage from './QuestionPage';
+import QuizPage from './QuizPage';
 import QuizResults from './QuizResults';
 import Login from './Login';
 import Register from './Register';
@@ -27,13 +27,13 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/QuestionCount" element={<QuestionCount />} />
         <Route path="/KnowledgeLevel" element={<KnowledgeLevel />} />
-        <Route path="/QuestionPage" element={<QuestionPage />} />
+        <Route path="/QuizPage" element={<QuizPage />} />
         <Route path="/QuizResults" element={<QuizResults />} />
         <Route path="/Login" element={<Login />} />
         <Route path="/Register" element={<Register />} />
         <Route path="/Nav" element={<Register />} />
         <Route path="/SubjectSelection" element={<SubjectSelection />} />
-        <Route path="/Profile" element={<Profile />} />
+        <Route path="/LoadingPage" element={<LoadingPage />} />
       </Routes>
     </Router>
   );
