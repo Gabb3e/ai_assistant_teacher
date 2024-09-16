@@ -11,7 +11,7 @@ import Login from './Login';
 import Register from './Register';
 import SubjectSelection from './SubjectSelection';
 import Onboarding from './Onboarding';
-import Profile from './Profile';
+import LoadingPage from './LoadingPage';
 
 
 
