@@ -30,38 +30,40 @@ import json
 #     "http://localhost:8000/"
 # ]
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    init_db() 
+    init_db()
     yield
 
 app = FastAPI(lifespan=lifespan)
 
 
-app.include_router(quiz_router) #So routes works in quiz_onb_endpoints
+app.include_router(quiz_router)  # So routes works in quiz_onb_endpoints
 
 app.include_router(user_router)
 
-app.include_router(auth_router) #So routes works in auth_endpoints
+app.include_router(auth_router)  # So routes works in auth_endpoints
 print("auth_router", auth_router)
 app.add_middleware(
-CORSMiddleware,
-allow_origins=["*"], # Allows all origins
-allow_credentials=True,
-allow_methods=["*"], # Allows all methods
-allow_headers=["*"], # Allows all headers
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
 )
 
 
 def load_api_key() -> str:
     api_key = os.getenv("OPENAI_API_KEY")
-    
+
     if not api_key:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="API key not found",
         )
     return api_key
+
 
 def extract_json_from_response(ai_response: str):
     """
@@ -75,6 +77,7 @@ def extract_json_from_response(ai_response: str):
     else:
         print("No valid JSON array found in the AI response.")
         return None
+
 
 def parse_quiz_response(ai_response: str):
     """
@@ -103,8 +106,10 @@ def parse_quiz_response(ai_response: str):
 
             # Ensure we have the correct answer and required keys
             if not correct_answer or 'question' not in question or 'options' not in question:
-                print(f"Invalid question structure or missing answer: {question}")
-                raise ValueError("Question is missing necessary fields or correct answer.")
+                print(
+                    f"Invalid question structure or missing answer: {question}")
+                raise ValueError(
+                    "Question is missing necessary fields or correct answer.")
 
             parsed_questions.append({
                 'question': question['question'],
@@ -122,12 +127,14 @@ def parse_quiz_response(ai_response: str):
         print(f"Error in quiz structure: {e}")
         return []
 
+
 # In-memory store for conversations (for simplicity)
 conversations: Dict[str, List[Dict[str, str]]] = {}
 
 client = OpenAI()
 
 #################################   endpoints   #################################
+
 
 @app.post("/reset-db", status_code=200, tags=["Database"])
 def reset_database():
@@ -137,11 +144,13 @@ def reset_database():
 
 # This endpoint will receive the user's response from the front-end, send it to the LLM, and return the AI's response.
 
+
 @app.post("/chat", response_model=ChatResponseModel, tags=["chat"])
 async def chat_with_ai(
     request: ChatRequestModel,
     db: Session = Depends(get_db),  # Injecting DB session for consistency
-    api_key: str = Depends(load_api_key),  # Injecting API key using a dependency
+    # Injecting API key using a dependency
+    api_key: str = Depends(load_api_key),
 ):
     try:
         completion = client.chat.completions.create(
@@ -175,11 +184,13 @@ async def chat_with_ai(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
         )
 
+
 @app.post("/quiz/create", response_model=QuizCreateResponseModel, tags=["quiz"])
 async def create_quiz(
     request: QuizCreateRequestModel,
     db: Session = Depends(get_db),  # Injecting DB session for consistency
-    api_key: str = Depends(load_api_key),  # Injecting API key using a dependency
+    # Injecting API key using a dependency
+    api_key: str = Depends(load_api_key),
 ):
     try:
         prompt = (
@@ -187,8 +198,8 @@ async def create_quiz(
             " Each question should have four distinct answer options."
             " Mark one correct answer for each question."
             " Respond in valid JSON format, with each question structured as an object containing 'question', 'options', and 'correct_answer'."
-)
-        
+        )
+
         if request.difficulty:
             prompt += f" The difficulty level should be {request.difficulty}."
 
@@ -198,7 +209,7 @@ async def create_quiz(
             "'question' (string), 'options' (array of strings), and 'correct_answer' (string)."
             " Example: [{'question': 'What is 2 + 2?', 'options': ['3', '4', '5', '6'], 'correct_answer': '4'}]."
             " Return only valid JSON with no additional explanations or text."
-)
+        )
 
         # Logging the final prompt
         print(f"Generated Prompt: {prompt}")
@@ -228,7 +239,8 @@ async def create_quiz(
         print(f"Parsed Questions: {questions}")
 
         # Save the generated quiz to the database
-        db_quiz = QuizModel(topic=request.topic, num_questions=request.num_questions, difficulty=request.difficulty)
+        db_quiz = QuizModel(
+            topic=request.topic, num_questions=request.num_questions, difficulty=request.difficulty)
         db.add(db_quiz)
         db.commit()
         db.refresh(db_quiz)
@@ -263,6 +275,7 @@ async def create_quiz(
             detail="An error occurred while creating the quiz. Please try again later."
         )
 
+
 @app.get("/quiz/{quiz_id}/questions", response_model=QuizCreateResponseModel, tags=["quiz"])
 async def get_quiz(quiz_id: int, db: Session = Depends(get_db)):
     # Fetch the quiz from the database
@@ -275,10 +288,12 @@ async def get_quiz(quiz_id: int, db: Session = Depends(get_db)):
         )
 
     # Fetch all questions related to the quiz
-    db_questions = db.query(QuizQuestionModel).filter(QuizQuestionModel.quiz_id == quiz_id).all()
+    db_questions = db.query(QuizQuestionModel).filter(
+        QuizQuestionModel.quiz_id == quiz_id).all()
 
     if not db_questions:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No questions found for this quiz.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="No questions found for this quiz.")
 
     # Map the database questions to the response model
     questions = [
@@ -296,7 +311,6 @@ async def get_quiz(quiz_id: int, db: Session = Depends(get_db)):
     )
 
     return response
-
 
 
 # This endpoint will allow the user to continue the conversation with the AI. It will handle back-and-forth communication.
@@ -365,10 +379,11 @@ async def get_users(db: Session = Depends(get_db)):
     Get all users
     """
     result = db.query(User.first_name, User.last_name)
-    
+
     if not result:
         return HTTPException(status_code=404, detail="User not found")
     return result
+
 
 @app.get("/user/{id}", status_code=200, tags=["User"])
 async def get_users(id: int, db: Session = Depends(get_db)):
@@ -379,4 +394,3 @@ async def get_users(id: int, db: Session = Depends(get_db)):
     if not result:
         return HTTPException(status_code=404, detail="User not found")
     return {"users": "Successfully fetched users."}
-

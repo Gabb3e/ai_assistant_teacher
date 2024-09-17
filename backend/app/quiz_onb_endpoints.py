@@ -1,5 +1,5 @@
 from openai import OpenAI
-from pydantic import BaseModel  
+from pydantic import BaseModel
 import os
 import json
 import re
@@ -26,7 +26,6 @@ def load_api_key() -> str:
     return api_key
 
 
-
 @quiz_router.post("/generate-topics", status_code=200, tags=["Topics"])
 async def generate_topics(subject_request: SubjectInSchema):
     """
@@ -42,7 +41,8 @@ async def generate_topics(subject_request: SubjectInSchema):
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "You are an assistant that generates topics.In json. Example: {'subject': 'Python', 'topics': ['Data types', 'Loops', 'Functions', 'Classes', 'Modules']}"},
+                {"role": "system",
+                    "content": "You are an assistant that generates topics.In json. Example: {'subject': 'Python', 'topics': ['Data types', 'Loops', 'Functions', 'Classes', 'Modules']}"},
                 {"role": "user", "content": f"Generate 5 topics related to {subject}."}
             ],
             max_tokens=200
@@ -80,4 +80,3 @@ def parse_topics_response(ai_response: str) -> List[str]:
         )
 
     return topics
-

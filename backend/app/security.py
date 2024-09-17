@@ -14,13 +14,12 @@ from datetime import timedelta, datetime, timezone
 from jose import JWTError, jwt, ExpiredSignatureError
 
 
-
 load_dotenv(override=True)
 
-ALGORITHM = os.getenv("ALGORITHM") 
-SECRET_KEY = os.getenv("SECRET_KEY")  #openssl rand -hex 32
+ALGORITHM = os.getenv("ALGORITHM")
+SECRET_KEY = os.getenv("SECRET_KEY")  # openssl rand -hex 32
 ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv(
-    "ACCESS_TOKEN_EXPIRE_MINUTES") 
+    "ACCESS_TOKEN_EXPIRE_MINUTES")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/user/token")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -37,7 +36,7 @@ def verify_password(plain_password: str, hashed_password: str):
 def create_access_token(data: dict, expires_delta: timedelta):
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + expires_delta
-    to_encode.update({"exp": expire})  
+    to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
@@ -62,6 +61,7 @@ def verify_token_access(token: str, credentials_exception: HTTPException):
         raise credentials_exception
     return token_data
 
+
 def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -71,6 +71,3 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Session 
     token_data = verify_token_access(token, credentials_exception)
     user = db.scalars(select(User).where(User.id == token_data.sub)).first()
     return user
-
-
-
