@@ -39,19 +39,19 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 
-app.include_router(quiz_router)  # So routes works in quiz_onb_endpoints
-
-app.include_router(user_router)
-
-app.include_router(auth_router)  # So routes works in auth_endpoints
-print("auth_router", auth_router)
+# Add CORS middleware to allow your frontend to access the backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins
+    allow_origins=["*"],  # Temporarily allow all origins
     allow_credentials=True,
-    allow_methods=["*"],  # Allows all methods
-    allow_headers=["*"],  # Allows all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
+
+# Include your routes here
+app.include_router(auth_router)
+app.include_router(user_router)
+app.include_router(quiz_router)
 
 
 def load_api_key() -> str:
