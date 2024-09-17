@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "pip": "^0.0.1",
     "react-router-dom": "^6.26.1"
   }
 }

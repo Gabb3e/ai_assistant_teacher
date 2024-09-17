@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import Sidebar from "./components/SideBar";
-import LoginStreak from "./components/LoginStreak";
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Sidebar from './components/SideBar';
+import LoginStreak from './components/LoginStreak';
+import Chattbot from './components/chattbot/chattbot';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -326,6 +327,10 @@ const Dashboard = () => {
           </div>
         </section>
 
+      <aside className="bg-white p-8 min-h-screen shadow-lg w-84">
+          <Chattbot user={user} />
+      </aside>
+
         {/* Display the subjects chosen during onboarding */}
         <section>
           <h3 className="text-2xl font-bold mb-4">Subjects you chose during onboarding:</h3>
@@ -339,8 +344,7 @@ const Dashboard = () => {
             )}
           </ul>
         </section>
-
-      </main>
     </div>
-  ); }
+  );
+}; }
   export default Dashboard;
