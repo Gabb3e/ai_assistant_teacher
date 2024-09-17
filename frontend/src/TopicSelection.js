@@ -1,70 +1,81 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from './AppNavbar';
-import landingPage from './LandingPage';
+import LandingPage from './LandingPage'; // Make sure to import LandingPage correctly
 
 const TopicSelection = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const subject = location.state?.subject || 'Unknown Subject'; // Get subject from location
+  const subject = location.state?.subject || 'Unknown Subject'; // Get subject from location state
   const [topics, setTopics] = useState([]); // State to hold topics from API
-  const [selectedTopic, setSelectedTopic] = useState('');
-  const [customTopic, setCustomTopic] = useState(''); // State to hold custom topic
+  const [selectedTopic, setSelectedTopic] = useState(''); // Selected predefined topic
+  const [customTopic, setCustomTopic] = useState(''); // Custom topic input state
   const [isCustomInputVisible, setIsCustomInputVisible] = useState(false); // Show/hide custom input
-  const [loading, setLoading] = useState(true); // State to manage loading
+  const [loading, setLoading] = useState(true); // Loading state
+  const [error, setError] = useState(''); // Error state
 
   // Fetch topics from the API based on the selected subject
   useEffect(() => {
     const fetchTopics = async () => {
+      setLoading(true); // Start loading
+      setError(''); // Clear any previous errors
+
       try {
         const response = await fetch('http://localhost:8000/generate-topics', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ subject }), // Send the selected subject
+          body: JSON.stringify({ subject }), // Send the selected subject to the API
         });
 
         if (response.ok) {
           const data = await response.json();
-          const topicsFromAPI = data.topics; 
-          setTopics(topicsFromAPI);
+          setTopics(data.topics); // Set topics from API response
         } else {
-          console.error('Failed to fetch topics');
+          const errorData = await response.json();
+          setError(errorData.message || 'Failed to fetch topics'); // Handle error message from API
         }
       } catch (error) {
-        console.error('Error fetching topics:', error);
+        setError('An error occurred while fetching topics. Please try again.');
+        console.error('Error fetching topics:', error); // Log the error for debugging
       } finally {
-        setLoading(false);
+        setLoading(false); // End loading
       }
     };
 
     fetchTopics();
   }, [subject]);
 
+  // Handle continue action
   const handleContinue = () => {
-    // Navigate to the next step, passing the selected topic (or custom topic)
-    const topicToUse = customTopic || selectedTopic;
-    navigate('/QuestionCount', { state: { subject, topic: topicToUse } });
+    const topicToUse = customTopic || selectedTopic; // Use custom topic if entered, otherwise use selected predefined topic
+    if (topicToUse) {
+      navigate('/QuestionCount', { state: { subject, topic: topicToUse } }); // Navigate to next step
+    }
   };
 
+  // Handle back button action
   const handleBack = () => {
     navigate('/SubjectSelection');
   };
 
+  // Handle selecting a predefined topic
   const handleTopicSelect = (topic) => {
     setSelectedTopic(topic);
-    setCustomTopic(''); // Clear custom topic if user selects a predefined topic
+    setCustomTopic(''); // Clear custom topic if predefined topic is selected
   };
 
+  // Handle adding a custom topic
   const handleAddCustomTopic = () => {
-    setIsCustomInputVisible(true); // Show input field for custom topic
-    setSelectedTopic(''); // Clear selected topic
+    setIsCustomInputVisible(true); // Show input for custom topic
+    setSelectedTopic(''); // Clear selected predefined topic
   };
 
+  // Handle change in custom topic input
   const handleCustomTopicChange = (e) => {
     setCustomTopic(e.target.value);
-    setSelectedTopic(''); // Clear selected topic if user enters a custom topic
+    setSelectedTopic(''); // Clear selected predefined topic when custom topic is entered
   };
 
   return (
@@ -73,7 +84,11 @@ const TopicSelection = () => {
       <h1 className="text-4xl font-bold text-black mb-8">Quiz</h1>
       <div className="w-full max-w-2xl mx-auto">
         {loading ? (
-          <p><landingPage/></p> // Show loading state while fetching data
+          // Show a loading message or component while data is being fetched
+          <div className="text-center text-gray-500">Loading topics...</div>
+        ) : error ? (
+          // Show error message if there is an error
+          <div className="text-center text-red-500">{error}</div>
         ) : (
           <>
             <div className="mb-8">
@@ -125,12 +140,12 @@ const TopicSelection = () => {
               )}
             </div>
             <div className="flex justify-between">
-              <button onClick={handleBack} className=" text-black py-2 px-9 rounded-lg hover:bg-gray-100">
+              <button onClick={handleBack} className="text-black py-2 px-9 rounded-lg hover:bg-gray-100">
                 Back
               </button>
               <button
                 onClick={handleContinue}
-                className=" text-white py-2 px-6 rounded-lg bg-gray-800 hover:bg-blue-900 transition duration-300"
+                className="text-white py-2 px-6 rounded-lg bg-gray-800 hover:bg-blue-900 transition duration-300"
                 disabled={!selectedTopic && !customTopic} // Disable if no topic or custom topic selected
               >
                 Continue →
@@ -144,4 +159,3 @@ const TopicSelection = () => {
 };
 
 export default TopicSelection;
-
