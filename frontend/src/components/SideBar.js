@@ -1,14 +1,22 @@
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom'; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHome, faUser, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 import { faQuestion, faChartLine } from '@fortawesome/free-solid-svg-icons';
 
    
-   const Sidebar = ({user}) => {
-    console.log(user);
-    if (user)
-    {
+
+const Sidebar = ({ user }) => {
+  const navigate = useNavigate(); // Initialize the useNavigate hook
+
+  // Function to handle logout
+  const HandleLogout = () => {
+    localStorage.removeItem('token'); // Remove the token from localStorage
+    navigate('/login'); // Redirect to the login page after logout
+  };
+
+  // Ensure user is available before rendering the sidebar
+  if (user) {
     return (
       <aside className="bg-gray-900 p-6 min-h-screen shadow-lg">
         <div className="mb-10">
@@ -47,7 +55,7 @@ import { faQuestion, faChartLine } from '@fortawesome/free-solid-svg-icons';
               </a>
             </li>
             <li className="mb-6 mt-14">
-              <a href="/login" className="text-xl font-semibold text-white hover:text-red-300">
+              <a href="/login" onClick={HandleLogout} className="text-xl font-semibold text-white hover:text-red-300">
               <FontAwesomeIcon icon={faSignOutAlt} className="text-white mr-3" />
                 Logout
               </a>

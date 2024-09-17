@@ -5,6 +5,8 @@ import LoginStreak from "./components/LoginStreak";
 import LoadingPage from "./LoadingPage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import Chattbot from './components/chattbot/chattbot';
+
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -15,6 +17,7 @@ const Dashboard = () => {
   const [success, setSuccess] = useState(null); // Success state
   const [token, setToken] = useState(null); // State for storing token
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
+  const [onboardingSubjects, setOnboardingSubjects] = useState([]); // New state for onboarding subjects
 
   // Function to fetch liked subjects
   const fetchLikedSubjects = async (userId) => {
@@ -46,6 +49,7 @@ const Dashboard = () => {
       setToken(storedToken); // Store the token in the state
       if (!storedToken) {
         console.log("No token found");
+        navigate("/login"); // Redirect to login if no token is found
         return;
       }
 
@@ -62,6 +66,24 @@ const Dashboard = () => {
           const data = await response.json();
           setUser(data);
           fetchLikedSubjects(data.id); // Fetch liked subjects after fetching user data
+
+          // Fetch subjects chosen during onboarding
+          const subjectsResponse = await fetch(
+            `http://127.0.0.1:8000/users/${data.id}/onboarding-subjects`,
+            {
+              headers: {
+                Authorization: `Bearer ${storedToken}`,
+              },
+            }
+          );
+
+          if (subjectsResponse.ok) {
+            const subjectsData = await subjectsResponse.json();
+            setOnboardingSubjects(subjectsData); // Set the onboarding subjects
+          } else {
+            const errorData = await subjectsResponse.json();
+            setError(errorData.detail || "Failed to fetch onboarding subjects");
+          }
         } else {
           const errorData = await response.json();
           setError(errorData.detail || "Failed to fetch user data");
@@ -174,6 +196,17 @@ const Dashboard = () => {
     navigate(`/quiz/${subject}`);
   };
 
+  // Handle error state
+  if (error) {
+    return <div>{error}</div>;
+  }
+
+  if (!user) {
+    return (
+      <div className="text-xl text-green-700 animate-spin">Loading......</div>
+    );
+  }
+
   return (
     <div className="flex bg-slate-100 min-h-screen">
       <Sidebar user={user} />
@@ -191,7 +224,7 @@ const Dashboard = () => {
             {/* Button to open modal */}
             <button
               onClick={() => setIsModalOpen(true)} // Show modal when clicked
-              className="bg-gray-900 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition"
+              className="bg-gray-800 text-white font-bold py-3 px-3 rounded-lg hover:bg-blue-700 transition"
             >
               Explore a New Subject
             </button>
@@ -201,7 +234,7 @@ const Dashboard = () => {
         {/* Modal */}
         {isModalOpen && (
           <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
               <h3 className="text-2xl font-bold mb-4">Add New Subject</h3>
 
               <input
@@ -242,11 +275,12 @@ const Dashboard = () => {
           {likedSubjects.length > 0 ? (
             likedSubjects.map((subject, index) => {
               const quizButtonColors = [
+
                 "bg-cyan-500 hover:bg-blue-700 text-white",
                 "bg-sky-500 hover:bg-blue-700 text-white",
-              ]; //Quick fix for the grids, if adding something on the right side of the screen, the grid will be broken.
+              ];
 
-              // Calculate the button color using the index
+
               const quizButtonColor =
                 quizButtonColors[index % quizButtonColors.length];
 
@@ -278,12 +312,19 @@ const Dashboard = () => {
                         navigate("/TopicSelection", {
                           state: { subject: subject.name },
                         })
-                      } // Pass subject to TopicSelection
-                      className={`w-full py-3 rounded-lg transition ${quizButtonColor}`} // Apply dynamic color here
+                      }
+                      className={`w-full py-3 rounded-lg transition ${quizButtonColor}`}
                     >
                       Take a quiz!
                     </button>
-                    <button className="w-full bg-gray-100 text-gray-700 py-3 rounded-lg hover:bg-gray-200 transition">
+                    <button
+                      onClick={() =>
+                        navigate("/ai-teacher", {
+                          state: { subject: subject.name },
+                        })
+                      }
+                      className="w-full bg-gray-100 text-gray-700 py-3 rounded-lg hover:bg-gray-200 transition"
+                    >
                       AI Teacher
                     </button>
                   </div>
@@ -299,7 +340,6 @@ const Dashboard = () => {
 
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-auto">
       <LoginStreak user={user} />
-
       <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
         <h3 className="text-xl font-semibold text-gray-700 mb-4">Your Progress Overview</h3>
         <p className="text-lg text-gray-500">How you're doing in {likedSubjects[0]?.name}</p>
