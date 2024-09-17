@@ -344,7 +344,9 @@ const Dashboard = () => {
             )}
           </ul>
         </section>
+      </main>
     </div>
   );
-}; }
-  export default Dashboard;
+};
+
+export default Dashboard;
