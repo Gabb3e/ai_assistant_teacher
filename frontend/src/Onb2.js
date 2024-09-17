@@ -4,6 +4,7 @@ const Onb2 = ({ nextStep, previousStep }) => {
   const [selected, setSelected] = useState([]);
   const [customSubject, setCustomSubject] = useState('');
   const [showCustomInput, setShowCustomInput] = useState(false);
+  const token = localStorage.getItem('token'); // Ensure you get the stored token
 
   const options = [
     'AI developer',
@@ -12,7 +13,7 @@ const Onb2 = ({ nextStep, previousStep }) => {
     'Engineer',
     'Mathematics',
     'Social Studies',
-    'History'
+    'History',
   ];
 
   const handleSelect = (option) => {
@@ -39,28 +40,40 @@ const Onb2 = ({ nextStep, previousStep }) => {
     }
   };
 
+  // This will send the selected subjects to the backend when the user clicks continue
+  const saveSubjects = async () => {
+    if (selected.length === 0) {
+      alert("Please select at least one subject!");
+      return;
+    }
+    try {
+      const response = await fetch('http://127.0.0.1:8000/users/save-subjects', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ subjects: selected }),
+      });
+      if (response.ok) {
+        console.log("Subjects saved successfully");
+        nextStep();
+      } else {
+        const errorData = await response.json();
+        console.error("Failed to save subjects:", errorData);
+      }
+    } catch (err) {
+      console.error("Error saving subjects:", err);
+    }
+  };
+
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-white">
       <h1 className="text-4xl font-bold text-black mb-8">Study Assistant</h1>
       <div className="w-full max-w-2xl mx-auto">
-        {/* Fix for the Step: 2 of 4 alignment */}
-        <div className="flex items-center mb-8">
-          <span className="text-gray-600 mr-4 whitespace-nowrap">Step: 2 of 4</span>
-          <div className="flex-grow flex space-x-2">
-            <div className="h-1 bg-blue-600 rounded-full w-1/3"></div>
-            <div className="h-1 bg-blue-600 rounded-full w-1/3"></div>
-            <div className="h-1 bg-gray-300 rounded-full w-1/3"></div>
-            <div className="h-1 bg-gray-300 rounded-full w-1/3"></div>
-          </div>
-        </div>
-
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-semibold text-black">
-            What are you currently studying?
-          </h2>
-          <p className="text-gray-500 mt-2">
-            Help us customize your experience by selecting the role that best describes you
-          </p>
+          <h2 className="text-2xl font-semibold text-black">What are you currently studying?</h2>
+          <p className="text-gray-500 mt-2">Help us customize your experience by selecting the role that best describes you</p>
         </div>
 
         <div className="grid grid-cols-3 gap-4 mb-8">
@@ -71,13 +84,12 @@ const Onb2 = ({ nextStep, previousStep }) => {
                 isSelected(option) ? 'bg-blue-600 text-white' : ''
               }`}
               onClick={() => handleSelect(option)}
-              disabled={!isSelected(option) && selected.length >= 3} // Disable if already 3 selected
+              disabled={!isSelected(option) && selected.length >= 3}
             >
               {option}
             </button>
           ))}
 
-          {/* Custom input box for "Add your own" with consistent button size */}
           {showCustomInput ? (
             <input
               type="text"
@@ -92,7 +104,7 @@ const Onb2 = ({ nextStep, previousStep }) => {
               className="bg-blue-600 text-white p-4 rounded-lg w-full"
               onClick={() => setShowCustomInput(true)}
               disabled={selected.length >= 3}
-              style={{ minWidth: '100%', maxWidth: '100%' }} // Ensure button size remains consistent
+              style={{ minWidth: '100%', maxWidth: '100%' }}
             >
               Add your own +
             </button>
@@ -100,13 +112,8 @@ const Onb2 = ({ nextStep, previousStep }) => {
         </div>
 
         <div className="flex justify-between">
-          <button className="text-gray-500" onClick={previousStep}>
-            Back
-          </button>
-          <button
-            className="bg-blue-600 text-white py-2 px-6 rounded-lg"
-            onClick={nextStep}
-          >
+          <button className="text-gray-500" onClick={previousStep}>Back</button>
+          <button className="bg-blue-600 text-white py-2 px-6 rounded-lg" onClick={saveSubjects}>
             Continue →
           </button>
         </div>
