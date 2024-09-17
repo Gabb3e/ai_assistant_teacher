@@ -12,6 +12,7 @@ import Register from './Register';
 import SubjectSelection from './SubjectSelection';
 import Onboarding from './Onboarding';
 import LoadingPage from './LoadingPage';
+import Profile from './Profile';
 
 
 
@@ -34,6 +35,7 @@ function App() {
         <Route path="/Nav" element={<Register />} />
         <Route path="/SubjectSelection" element={<SubjectSelection />} />
         <Route path="/LoadingPage" element={<LoadingPage />} />
+        <Route path="/Profile" element={<Profile />} />
       </Routes>
     </Router>
   );
