@@ -11,6 +11,7 @@ from schemas.schemas import UserBase, SubjectResponse, SubjectLikeRequest
 from models.models import User, user_likes_subject, Subject, Topic
 
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
