@@ -44,6 +44,7 @@ const Dashboard = () => {
       setToken(storedToken); // Store the token in the state
       if (!storedToken) {
         console.log("No token found");
+        navigate("/login"); // Redirect to login if no token is found
         return;
       }
 
@@ -173,7 +174,7 @@ const Dashboard = () => {
             {/* Button to open modal */}
             <button
               onClick={() => setIsModalOpen(true)} // Show modal when clicked
-              className="bg-gray-900 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition"
+              className="bg-gray-800 text-white font-bold py-3 px-3 rounded-lg hover:bg-blue-700 transition"
             >
               Add New Subject
             </button>
@@ -183,7 +184,7 @@ const Dashboard = () => {
         {/* Modal */}
         {isModalOpen && (
           <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
               <h3 className="text-2xl font-bold mb-4">Add New Subject</h3>
 
               <input
@@ -224,9 +225,11 @@ const Dashboard = () => {
           {likedSubjects.length > 0 ? (
             likedSubjects.map((subject, index) => {
               const quizButtonColors = [
+
                 "bg-cyan-500 hover:bg-blue-700 text-white",
                 "bg-sky-500 hover:bg-blue-700 text-white",
               ];
+
 
               const quizButtonColor =
                 quizButtonColors[index % quizButtonColors.length];

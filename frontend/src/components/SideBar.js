@@ -1,10 +1,17 @@
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom'; 
-   
-   const Sidebar = ({user}) => {
-    console.log(user);
-    if (user)
-    {
+
+const Sidebar = ({ user }) => {
+  const navigate = useNavigate(); // Initialize the useNavigate hook
+
+  // Function to handle logout
+  const HandleLogout = () => {
+    localStorage.removeItem('token'); // Remove the token from localStorage
+    navigate('/login'); // Redirect to the login page after logout
+  };
+
+  // Ensure user is available before rendering the sidebar
+  if (user) {
     return (
       <aside className="bg-gray-900 p-6 min-h-screen shadow-lg">
         <div className="mb-10">
@@ -39,7 +46,9 @@ import { useNavigate } from 'react-router-dom';
               </a>
             </li>
             <li className="mb-4">
-              <a href="/login" className="text-xl font-semibold text-white hover:text-blue-600">
+              <a href="/login"
+              onClick={HandleLogout}
+              className="text-xl font-semibold text-white hover:text-blue-600">
                 Logout
               </a>
             </li>
