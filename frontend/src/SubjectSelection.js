@@ -37,16 +37,17 @@ const SubjectSelection = () => {
       <Navbar />
       <h1 className="text-4xl font-bold text-black mb-8">Quiz</h1>
       <div className="w-full max-w-2xl mx-auto">
-        <div className="mb-8">
-          <div className="flex justify-between items-center">
-            <span className="text-gray-600">Step: 1 of 3</span>
-          </div>
-          <div className="flex space-x-2 w-full mt-2">
-            <div className="h-1 bg-blue-600 rounded-full w-1/4"></div>
-            <div className="h-1 bg-gray-300 rounded-full w-1/4"></div>
-            <div className="h-1 bg-gray-300 rounded-full w-1/4"></div>
-          </div>
+      <div className="mb-8">
+        <div className="flex justify-center items-center mb-2">
+          <span className="text-gray-600">Step: 1 of 4</span>
         </div>
+        <div className="flex space-x-2 w-full justify-center">
+          <div className="h-1 bg-blue-600 rounded-full w-1/4"></div>
+          <div className="h-1 bg-gray-300 rounded-full w-1/4"></div>
+          <div className="h-1 bg-gray-300 rounded-full w-1/4"></div>
+          <div className="h-1 bg-gray-300 rounded-full w-1/4"></div>
+        </div>
+      </div>
         <div className="text-center mb-8">
           <h2 className="text-2xl font-semibold text-black">
             What <span className="text-blue-600">Subject</span> do you want to take a quiz on?
