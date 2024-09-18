@@ -1,92 +1,115 @@
-import React, { useState } from 'react';
-
-const Sidebar = ({ user }) => {
-  return (
-    <aside className="bg-white p-8 min-h-screen shadow-lg">
-      <div className="mb-10">
-        <img
-          src="https://via.placeholder.com/150"
-          alt="User Avatar"
-          className="rounded-full w-20 h-20 mb-4"
-        />
-        <h3 className="text-xl font-bold">{user.first_name} {user.last_name}</h3>
-        <p className="text-sm text-gray-500">{user.email}</p>
-      </div>
-      <nav>
-        <ul>
-          <li className="mb-4">
-            <a href="/" className="text-lg font-semibold text-gray-700 hover:text-blue-600">
-              Home
-            </a>
-          </li>
-          <li className="mb-4">
-            <a href="/quizzes" className="text-lg font-semibold text-gray-700 hover:text-blue-600">
-              Quizzes
-            </a>
-          </li>
-          <li className="mb-4">
-            <a href="/progress" className="text-lg font-semibold text-gray-700 hover:text-blue-600">
-              Progress
-            </a>
-          </li>
-          <li className="mb-4">
-            <a href="/profile" className="text-lg font-semibold text-blue-600">
-              Profile
-            </a>
-          </li>
-          <li className="mb-4">
-            <a href="/login" className="text-lg font-semibold text-gray-700 hover:text-blue-600">
-              Logout
-            </a>
-          </li>
-        </ul>
-      </nav>
-    </aside>
-  );
-};
+import React, { useState, useEffect } from 'react';
+import Sidebar from './components/SideBar';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
-  // Mock user data for now
-  const user = {
-    first_name: 'John',
-    last_name: 'Doe',
-    email: 'john.doe@example.com',
-    profile_picture: 'https://via.placeholder.com/150',
-  };
-
-  const [editing, setEditing] = useState(false);
+  const [user, setUser] = useState(null); // Initialize user state
   const [profileData, setProfileData] = useState({
-    first_name: user.first_name,
-    last_name: user.last_name,
-    profile_picture: user.profile_picture,
+    first_name: '',
+    last_name: '',
+    email: '',
   });
+  const [editing, setEditing] = useState(false);
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
-  });
+  // Fetch user data from the API
+  useEffect(() => {
+    const fetchUser = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login'); // Redirect to login if no token
+        return;
+      }
 
-  // Toggle between view and edit mode
-  const handleEditToggle = () => {
-    setEditing(!editing);
-  };
+      try {
+        const response = await fetch('http://localhost:8000/me', {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
 
-  // Handle input changes
+        if (response.ok) {
+          const userData = await response.json();
+          setUser(userData); // Set user data
+          setProfileData({
+            first_name: userData.first_name,
+            last_name: userData.last_name,
+            email: userData.email,
+          });
+        } else {
+          console.error('Failed to fetch user data');
+        }
+      } catch (error) {
+        console.error('An error occurred while fetching user data:', error);
+      }
+    };
+
+    fetchUser();
+  }, [navigate]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setProfileData((prevData) => ({ ...prevData, [name]: value }));
   };
 
-  // Handle password changes
-  const handlePasswordChange = (e) => {
-    const { name, value } = e.target;
-    setPasswordData((prevData) => ({ ...prevData, [name]: value }));
+  const handleSaveProfile = async () => {
+    const token = localStorage.getItem('token');
+    const formData = new FormData();
+    formData.append('first_name', profileData.first_name);
+    formData.append('last_name', profileData.last_name);
+    formData.append('email', profileData.email);
+
+    if (!user || !user.id) {
+      setError('User ID not found. Please try refreshing the page.');
+      return;
+    }
+
+    try {
+      // Update the user profile
+      const response = await fetch(`http://localhost:8000/users/${user.id}/update-profile`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (response.ok) {
+        // Fetch the updated user data after successful update
+        const updatedUser = await fetch('http://localhost:8000/me', {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (updatedUser.ok) {
+          const userData = await updatedUser.json();
+          setUser(userData);
+          setEditing(false);
+        } else {
+          setError('Failed to fetch updated user data');
+        }
+      } else {
+        const errorData = await response.json();
+        setError(errorData.detail || 'Failed to update profile');
+      }
+    } catch (error) {
+      setError('An error occurred while updating profile');
+    }
   };
+
+  if (!user) {
+    return <div>Loading...</div>; // Show a loading message while fetching user data
+  }
 
   return (
     <div className="flex bg-gray-50 min-h-screen">
-      {/* Sidebar */}
+      {/* Sidebar with fetched user data */}
       <Sidebar user={user} />
 
       {/* Main Content */}
@@ -99,26 +122,6 @@ const Profile = () => {
         <section className="bg-white p-5 rounded-lg shadow-lg mb-8">
           <h3 className="text-xl font-semibold mb-4">Personal Information</h3>
           <div className="space-y-4">
-            <div className="flex items-center">
-              <img
-                src={profileData.profile_picture}
-                alt="User Avatar"
-                className="rounded-full w-14 h-14 mr-4"
-              />
-              {editing && (
-                <div>
-                  <label className="block text-xs font-medium text-gray-700">
-                    Change Profile Picture
-                  </label>
-                  <input
-                    type="file"
-                    className="mt-1 text-xs"
-                    onChange={(e) => console.log('Profile picture selected', e.target.files[0])} // Placeholder
-                  />
-                </div>
-              )}
-            </div>
-
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">First Name</label>
@@ -126,9 +129,9 @@ const Profile = () => {
                   type="text"
                   name="first_name"
                   value={profileData.first_name}
-                  disabled={!editing}
                   onChange={handleInputChange}
-                  className={`mt-1 block w-full p-2 border ${editing ? 'border-gray-300' : 'border-transparent'} rounded-md text-sm`}
+                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-sm"
+                  disabled={!editing}
                 />
               </div>
 
@@ -138,9 +141,21 @@ const Profile = () => {
                   type="text"
                   name="last_name"
                   value={profileData.last_name}
-                  disabled={!editing}
                   onChange={handleInputChange}
-                  className={`mt-1 block w-full p-2 border ${editing ? 'border-gray-300' : 'border-transparent'} rounded-md text-sm`}
+                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-sm"
+                  disabled={!editing}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={profileData.email}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-sm"
+                  disabled={!editing}
                 />
               </div>
             </div>
@@ -148,7 +163,7 @@ const Profile = () => {
             {editing ? (
               <div className="flex justify-end space-x-4 mt-4">
                 <button
-                  onClick={handleEditToggle}
+                  onClick={handleSaveProfile}
                   className="bg-blue-600 text-white py-2 px-4 rounded-lg text-sm hover:bg-blue-700"
                 >
                   Save
@@ -162,67 +177,20 @@ const Profile = () => {
               </div>
             ) : (
               <button
-                onClick={handleEditToggle}
+                onClick={() => setEditing(true)}
                 className="bg-blue-600 text-white py-2 px-4 rounded-lg text-sm hover:bg-blue-700 mt-4"
               >
                 Edit Profile
-              </button>
-            )}
-          </div>
-        </section>
+                </button>
+        )}
 
-        {/* Change Password Section */}
-        <section className="bg-white p-5 rounded-lg shadow-lg">
-          <h3 className="text-xl font-semibold mb-4">Change Password</h3>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Current Password</label>
-              <input
-                type="password"
-                name="currentPassword"
-                value={passwordData.currentPassword}
-                onChange={handlePasswordChange}
-                className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-sm"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">New Password</label>
-                <input
-                  type="password"
-                  name="newPassword"
-                  value={passwordData.newPassword}
-                  onChange={handlePasswordChange}
-                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={passwordData.confirmPassword}
-                  onChange={handlePasswordChange}
-                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-sm"
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end space-x-4 mt-4">
-              <button
-                onClick={() => console.log('Password saved')}
-                className="bg-blue-600 text-white py-2 px-4 rounded-lg text-sm hover:bg-blue-700"
-              >
-                Save Password
-              </button>
-            </div>
-          </div>
-        </section>
-      </main>
-    </div>
-  );
+        {/* Replace the error rendering with a specific message */}
+        {error && <p className="text-red-500 mt-4">An error occurred while updating your profile. Please try again later.</p>}
+      </div>
+    </section>
+  </main>
+</div>
+);
 };
 
 export default Profile;
