@@ -83,7 +83,7 @@ def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], http_reque
     access_token = create_access_token(
         data={"sub": str(user.id)}, expires_delta=access_token_expires)
 
-    return {"access_token": access_token, "token_type": "bearer", "ip": user_ip, "login_streak": user.login_streak}
+    return {"access_token": access_token, "token_type": "bearer", "ip": user_ip, "login_streak": user.login_streak, "first_name": user.first_name} 
 
 
 @auth_router.get("/me")

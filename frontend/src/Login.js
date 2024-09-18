@@ -71,11 +71,13 @@ const Login = () => {
       {/* Left side with an illustration or branding */}
       <div className="hidden lg:flex w-full lg:w-1/2 justify-center items-center bg-white">
         <div className="p-10">
+          <a href="/" className="flex items-center space-x-2">
           <img 
             src="./AI-logo.webp" 
             alt="Login Illustration" 
             className="max-w-sm mx-auto rounded-lg shadow-lg"
           />
+          </a>
           <h2 className="text-4xl font-bold text-gray-800 mt-10 text-center">Welcome Back!</h2>
           <p className="text-lg text-gray-600 mt-4">
             Continue your learning journey and achieve your goals with Study Assistant.

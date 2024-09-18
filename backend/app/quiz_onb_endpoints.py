@@ -39,36 +39,32 @@ def load_api_key() -> str:
 @quiz_router.post("/generate-topics", status_code=200, tags=["Topics"])
 async def generate_topics(subject_request: SubjectInSchema):
     """
-    Generate related topics based on the given subject.
-    Instead of calling the OpenAI API, we return a predefined set of topics.
+    Generate related topics using OpenAI API based on the given subject.
     """
+    # Load the OpenAI API key
+    OpenAI.api_key = load_api_key()
+
     subject = subject_request.subject
 
-    # Predefined topics based on the subject
-    predefined_topics = {
-        "AI developer": [
-            "Ethical Considerations in AI Development",
-            "Machine Learning Frameworks (TensorFlow, PyTorch)",
-            "Natural Language Processing (NLP) Techniques",
-            "The Future of AI: Emerging Trends",
-            "Best Practices for AI Model Training and Data Handling"
-        ],
-        "Python": [
-            "Advanced Python Data Structures",
-            "Asynchronous Programming in Python",
-            "Python's Role in Machine Learning and AI",
-            "Python Web Development with Django and Flask",
-            "Python Testing and Debugging Best Practices"
-        ],
-        # You can add more subjects and corresponding topics as needed
-    }
+    # OpenAI API call to generate topics
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are an assistant that generates topics.In json. Example: {'subject': 'Python', 'topics': ['Data types', 'Loops', 'Functions', 'Classes', 'Modules']}"},
+                {"role": "user", "content": f"Generate 5 topics related to {subject}."}
+            ],
+            max_tokens=200
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to call OpenAI API: {e}"
+        )
 
-    # Check if we have predefined topics for the given subject
-    if subject in predefined_topics:
-        topics = predefined_topics[subject]
-    else:
-        topics = ["General AI", "Algorithms", "Data Structures",
-                  "Machine Learning", "Artificial Intelligence"]
+    # Extract generated topics from response
+    ai_response = response.choices[0].message.content
+    topics = parse_topics_response(ai_response)
 
     return {"subject": subject, "topics": topics}
 

@@ -141,6 +141,7 @@ class Token(BaseModel):
     
 class TokenWithStreak(Token):
     ip: str
+    first_name: str
     login_streak: int
 
 class TokenPayload(BaseModel):

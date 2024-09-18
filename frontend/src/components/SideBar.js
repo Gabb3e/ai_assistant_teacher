@@ -56,7 +56,7 @@ const Sidebar = ({ user }) => {
             </li>
             <li className="mb-6 mt-14">
               <a href="/login" onClick={HandleLogout} className="text-xl font-semibold text-white hover:text-red-300">
-              <FontAwesomeIcon icon={faSignOutAlt} className="text-white mr-3" />
+              <FontAwesomeIcon icon={faSignOutAlt} className="text-white mr-3 hover:text-red-300" />
                 Logout
               </a>
             </li>
