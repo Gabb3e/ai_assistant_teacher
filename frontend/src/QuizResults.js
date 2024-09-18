@@ -6,25 +6,31 @@ const QuizResults = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Assuming the quiz result data is passed via state
-  const { quizQuestions, userAnswers, topic, questionCount, difficulty } = location.state || {};
+  // Extracting data passed via location.state
+  const { quizQuestions, userAnswers, topic, questionCount, difficulty, subject, explanation } = location.state || {};
 
   useEffect(() => {
     // Debugging output to check if state was passed correctly
     console.log('Quiz Questions:', quizQuestions);
     console.log('User Answers:', userAnswers);
+    console.log('Explanation:', explanation);
     console.log('Location State:', location.state);
-  }, [quizQuestions, userAnswers, location.state]);
+  }, [quizQuestions, userAnswers, explanation, location.state]);
   
   const handleRetakeQuiz = () => {
-    // Navigate back to QuestionPage with the original quiz configuration
-    navigate('/QuizPage', {
-      state: {
-        topic,
-        questionCount,
-        difficulty,
-      },
-    });
+    if (subject && topic && questionCount && difficulty) {
+      // Navigate back to QuizPage with the original quiz configuration
+      navigate('/QuizPage', {
+        state: {
+          subject,
+          topic,
+          questionCount,
+          difficulty,
+        },
+      });
+    } else {
+      console.error('Missing quiz configuration data for retaking the quiz.');
+    }
   };
 
   const handleDone = () => {
@@ -33,7 +39,15 @@ const QuizResults = () => {
 
   // If no quiz data is available (e.g., if user navigates directly to this page)
   if (!quizQuestions || !userAnswers) {
-    return <div>No quiz results available.</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-white pt-32 pb-16">
+        <AppNavbar />
+        <h1 className="text-4xl font-bold text-black mb-8">No quiz results available.</h1>
+        <button onClick={handleDone} className="bg-gray-900 hover:bg-blue-700 text-white py-2 px-6 rounded-lg">
+          Go to Dashboard
+        </button>
+      </div>
+    );
   }
 
   // Calculate the score
@@ -45,7 +59,7 @@ const QuizResults = () => {
     <div className="flex flex-col items-center justify-center min-h-screen bg-white pt-32 pb-16">
       <AppNavbar />
       <h1 className="text-4xl font-bold text-black mb-8">Quiz Results</h1>
-      <div className="w-full max-w-3xl mx-auto">
+      <div className="w-full max-w-6xl mx-auto">
         {/* Summary Section */}
         <div className="text-center mb-8">
           <h2 className="text-2xl font-semibold text-black">
@@ -57,19 +71,23 @@ const QuizResults = () => {
         </div>
 
         {/* Questions and Answers */}
-        <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {quizQuestions.map((question, index) => (
-            <div key={index} className="p-4 border border-gray-300 rounded-lg">
+            <div key={index} className="p-4 border border-gray-900 rounded-md">
               <h3 className="text-xl font-semibold text-black mb-2">Question {index + 1}:</h3>
               <p className="text-gray-700 mb-4">{question.question}</p>
               <p
-                className={`font-bold ${userAnswers[index] === question.correct_answer ? 'text-green-600' : 'text-red-600'}`}
+                className={`font-bold ${userAnswers[index] === question.correct_answer ? 'text-green-700' : 'text-red-700'}`}
               >
                 Your answer: {userAnswers[index]} - {userAnswers[index] === question.correct_answer ? 'Correct!' : 'Incorrect'}
               </p>
               {userAnswers[index] !== question.correct_answer && (
-                <p className="text-gray-500">Correct answer: {question.correct_answer}</p>
+                <p className="text-green-900">Correct answer: {question.correct_answer}</p>
               )}
+              {/* Explanation of the correct answer */}
+              <p className="text-gray-900 mt-2">
+              <strong>Explanation:</strong> {explanation[index] || 'No explanation provided.'}
+              </p>
             </div>
           ))}
         </div>

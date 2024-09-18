@@ -120,6 +120,7 @@ class ChatResponseModel(BaseModel):
 # Quiz Models for Request and Response
 class QuizCreateRequestModel(BaseModel):
     topic: str
+    subject: str
     num_questions: int
     difficulty: Optional[str] = None
 
@@ -127,6 +128,8 @@ class QuestionModel(BaseModel):
     question: str
     options: List[str]
     correct_answer: str
+    explanation: Optional[str] = None  # Make explanation optional
+
 
 class QuizCreateResponseModel(BaseModel):
     quiz_id: int
