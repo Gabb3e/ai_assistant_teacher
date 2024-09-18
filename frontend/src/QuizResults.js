@@ -40,7 +40,7 @@ const QuizResults = () => {
   // If no quiz data is available (e.g., if user navigates directly to this page)
   if (!quizQuestions || !userAnswers) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-white pt-32 pb-16">
+      <div className="flex flex-col items-center justify-center min-h-screen pt-32 pb-16">
         <AppNavbar />
         <h1 className="text-4xl font-bold text-black mb-8">No quiz results available.</h1>
         <button onClick={handleDone} className="bg-gray-900 hover:bg-blue-700 text-white py-2 px-6 rounded-lg">
@@ -56,9 +56,9 @@ const QuizResults = () => {
   }, 0);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-white pt-32 pb-16">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 pt-32 pb-16">
       <AppNavbar />
-      <h1 className="text-4xl font-bold text-black mb-8">Quiz Results</h1>
+      <h1 className="text-4xl font-bold text-black mb-8 ">Quiz Results</h1>
       <div className="w-full max-w-6xl mx-auto">
         {/* Summary Section */}
         <div className="text-center mb-8">
@@ -71,21 +71,21 @@ const QuizResults = () => {
         </div>
 
         {/* Questions and Answers */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white">
           {quizQuestions.map((question, index) => (
-            <div key={index} className="p-4 border border-gray-900 rounded-md">
-              <h3 className="text-xl font-semibold text-black mb-2">Question {index + 1}:</h3>
-              <p className="text-gray-700 mb-4">{question.question}</p>
+            <div key={index} className="p-4 border-4 border-dashed border-gray-900 rounded-md">
+              <h3 className="text-xl font-semibold text-black mb-2">Question {index + 1}: <p className="text-black mb-6">{question.question}</p></h3>
+              
               <p
                 className={`font-bold ${userAnswers[index] === question.correct_answer ? 'text-green-700' : 'text-red-700'}`}
               >
                 Your answer: {userAnswers[index]} - {userAnswers[index] === question.correct_answer ? 'Correct!' : 'Incorrect'}
               </p>
               {userAnswers[index] !== question.correct_answer && (
-                <p className="text-green-900">Correct answer: {question.correct_answer}</p>
+                <p className="text-green-900 my-4">Correct answer: {question.correct_answer}</p>
               )}
               {/* Explanation of the correct answer */}
-              <p className="text-gray-900 mt-2">
+              <p className="text-gray-900 mt-3 mb-0">
               <strong>Explanation:</strong> {explanation[index] || 'No explanation provided.'}
               </p>
             </div>
@@ -94,10 +94,10 @@ const QuizResults = () => {
 
         {/* Action Buttons */}
         <div className="flex justify-between mt-8">
-          <button onClick={handleRetakeQuiz} className="text-gray-500">
+          <button onClick={handleRetakeQuiz} className="text-gray-500 hover:bg-gray-200 rounded-lg px-2">
             Retake Quiz
           </button>
-          <button onClick={handleDone} className="bg-blue-600 text-white py-2 px-6 rounded-lg">
+          <button onClick={handleDone} className="bg-blue-900 text-white py-2 px-6 rounded-lg hover:bg-blue-800">
             Done
           </button>
         </div>

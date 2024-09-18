@@ -442,3 +442,5 @@ async def get_users(id: int, db: Session = Depends(get_db)):
     if not result:
         return HTTPException(status_code=404, detail="User not found")
     return {"users": "Successfully fetched users."}
+
+

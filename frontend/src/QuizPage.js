@@ -98,7 +98,7 @@ const QuizPage = () => {
   const handleFinishQuiz = () => {
     // Navigate to QuizResults and pass quizQuestions and userAnswers
     navigate('/QuizResults', { state: { explanation: responseData.questions.map(q => q.explanation), // array of explanations
-    quizQuestions, userAnswers, topic, questionCount, difficulty, responseData} });
+    quizQuestions, userAnswers, subject, topic, questionCount, difficulty, responseData} });
   };
 
   // If there is an error, display the error message
@@ -122,7 +122,7 @@ const QuizPage = () => {
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-white">
       <AppNavbar />
-      <h1 className="text-4xl font-bold text-black mb-8">Study Assistant</h1>
+      <h1 className="text-4xl font-bold text-black mb-8 mt-7">Study Assistant</h1>
       <div className="w-full max-w-3xl mx-auto">
         {/* Progress Bar */}
         <div className="flex items-center justify-between mb-8">
