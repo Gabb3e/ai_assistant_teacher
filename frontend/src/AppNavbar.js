@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 const Navbar = () => {
+  
   return (
     <nav className="bg-gray-900 shadow-lg fixed top-0 w-full z-50">
       <div className="text-2xl font-bold text-white mx-5 mt-5">Study Assistant</div>
