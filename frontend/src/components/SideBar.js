@@ -49,7 +49,7 @@ const Sidebar = ({ user }) => {
               </a>
             </li>
             <li className="mb-6">
-              <a href="/tracking" className="text-xl font-semibold text-white hover:text-blue-300">
+              <a href="/profile" className="text-xl font-semibold text-white hover:text-blue-300">
               <FontAwesomeIcon icon={faUser} className="text-white mr-3" />
                 Profile
               </a>

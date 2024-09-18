@@ -1,12 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
+from fastapi import APIRouter, FastAPI, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from typing import List, Dict, Any
 from models.models import User, user_likes_subject, Subject, Topic
-from db_setup import get_db
+from db_setup import get_db, init_db
 from schemas.schemas import SubjectLikeRequest, SubjectResponse, UserBase, UserCreate, SubjectLikeRequest
 from security import get_current_user
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
+from openai import OpenAI
 import os
 
 
@@ -34,9 +35,6 @@ def load_api_key() -> str:
 
     
 @user_router.post("/users/{user_id}/update-profile", status_code=200)
-    """
-    Update user profile information including first name, last name, email, and profile picture.
-    """
 async def update_user_profile(
     user_id: int,
     first_name: str = Form(...),
@@ -47,12 +45,15 @@ async def update_user_profile(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    """
+    Update user profile information including first name, last name, email, and profile picture.
+    """
 
     # Ensure the user is updating their own profile
     if current_user.id != user_id:
 
     # Fetch the user from the database
-    user = db.query(User).filter(User.id == user_id).first()
+        user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 

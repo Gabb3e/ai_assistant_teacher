@@ -17,7 +17,6 @@ const Dashboard = () => {
   const [success, setSuccess] = useState(null); // Success state
   const [token, setToken] = useState(null); // State for storing token
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
-  const [onboardingSubjects, setOnboardingSubjects] = useState([]); // New state for onboarding subjects
 
   // Function to fetch liked subjects
   const fetchLikedSubjects = async (userId) => {
@@ -67,23 +66,6 @@ const Dashboard = () => {
           setUser(data);
           fetchLikedSubjects(data.id); // Fetch liked subjects after fetching user data
 
-          // Fetch subjects chosen during onboarding
-          const subjectsResponse = await fetch(
-            `http://127.0.0.1:8000/users/${data.id}/onboarding-subjects`,
-            {
-              headers: {
-                Authorization: `Bearer ${storedToken}`,
-              },
-            }
-          );
-
-          if (subjectsResponse.ok) {
-            const subjectsData = await subjectsResponse.json();
-            setOnboardingSubjects(subjectsData); // Set the onboarding subjects
-          } else {
-            const errorData = await subjectsResponse.json();
-            setError(errorData.detail || "Failed to fetch onboarding subjects");
-          }
         } else {
           const errorData = await response.json();
           setError(errorData.detail || "Failed to fetch user data");
@@ -109,9 +91,6 @@ const Dashboard = () => {
     );
   }
 
-  const goToTopicSelection = () => {
-    navigate("/TopicSelection"); // Navigate to the TopicSelection page
-  };
 
   const handleAddSubject = async () => {
     if (!newSubject.trim()) {
@@ -192,9 +171,6 @@ const Dashboard = () => {
     setSuccess(null); // Clear success message when modal is closed
   };
 
-  const startQuiz = (subject) => {
-    navigate(`/quiz/${subject}`);
-  };
 
   // Handle error state
   if (error) {
