@@ -11,9 +11,6 @@ from openai import OpenAI
 import os
 
 
-
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
@@ -25,35 +22,34 @@ load_dotenv()
 client = OpenAI()
 user_router = APIRouter(tags=["User"])
 
+
 def load_api_key() -> str:
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
-      raise HTTPException(
+        raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
 
 
-
-    
 @user_router.post("/users/{user_id}/update-profile", status_code=200)
 async def update_user_profile(
     user_id: int,
     first_name: str = Form(...),
     last_name: str = Form(...),
     email: str = Form(...),
-    # Optional profile picture upload
-    profile_picture: UploadFile = File(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     """
-    Update user profile information including first name, last name, email, and profile picture.
+    Update user profile information including first name, last name, and email.
     """
 
     # Ensure the user is updating their own profile
     if current_user.id != user_id:
+        raise HTTPException(
+            status_code=403, detail="You are not authorized to update this profile")
 
     # Fetch the user from the database
-        user = db.query(User).filter(User.id == user_id).first()
+    user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -101,28 +97,29 @@ async def add_new_subject(user_id: int, request: SubjectLikeRequest, db: Session
     return SubjectResponse(id=subject.id, name=subject.name)
 
 # Endpoint 1: Delete a subject liked by a user
+
+
 @user_router.delete("/users/{user_id}/subjects/{subject_id}", status_code=200, tags=["Subjects"])
-async def delete_subject(user_id:int, subject_id: int, db: Session = Depends(get_db)):
+async def delete_subject(user_id: int, subject_id: int, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     # Check if the subject exists
     subject = db.query(Subject).filter(Subject.id == subject_id).first()
     if not subject:
         raise HTTPException(status_code=404, detail="Subject not found")
-    
+
     # Check if the subject is in the user's liked subjects
-    if subject  not in user.liked_subjects:
-        raise HTTPException(status_code=404, detail="Subject not found in user's liked subjects")
-    
+    if subject not in user.liked_subjects:
+        raise HTTPException(
+            status_code=404, detail="Subject not found in user's liked subjects")
+
     # Remove the subject from the user's liked subjects
     user.liked_subjects.remove(subject)
     db.commit()
 
     return {"message": f"Deleted subject: {subject.name} from user's liked subjects"}
-
-
 
 
 @user_router.get("/users/{user_id}/liked-subjects", response_model=List[SubjectResponse])
