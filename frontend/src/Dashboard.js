@@ -5,9 +5,8 @@ import LoginStreak from "./components/LoginStreak";
 import LoadingPage from "./LoadingPage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
-import Chattbot from './components/chattbot/chattbot';
+import Chattbot from "./components/chattbot/chattbot";
 import LoadingBar from "./components/Loading";
-
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -18,6 +17,7 @@ const Dashboard = () => {
   const [success, setSuccess] = useState(null); // Success state
   const [token, setToken] = useState(null); // State for storing token
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
+  const [showChattbot, setShowChattbot] = useState(false);
 
   // Function to fetch liked subjects
   const fetchLikedSubjects = async (userId) => {
@@ -66,7 +66,6 @@ const Dashboard = () => {
           const data = await response.json();
           setUser(data);
           fetchLikedSubjects(data.id); // Fetch liked subjects after fetching user data
-
         } else {
           const errorData = await response.json();
           setError(errorData.detail || "Failed to fetch user data");
@@ -88,11 +87,10 @@ const Dashboard = () => {
     return (
       <div>
         {/* <LoadingPage /> */}
-        <LoadingBar text="Loading Dashboard..."/>
+        <LoadingBar text="Loading Dashboard..." />
       </div>
     );
   }
-
 
   const handleAddSubject = async () => {
     if (!newSubject.trim()) {
@@ -173,6 +171,13 @@ const Dashboard = () => {
     setSuccess(null); // Clear success message when modal is closed
   };
 
+  const handleAiTeacherClick = (subject) => {
+    setShowChattbot(true); // Show the chatbot when "AI Teacher" is clicked
+  };
+
+  const handleCloseChattbot = () => {
+    setShowChattbot(false); // Hide chatbot when it needs to be closed
+  };
 
   // Handle error state
   if (error) {
@@ -192,10 +197,10 @@ const Dashboard = () => {
         <header className="flex justify-between items-center mb-12">
           <div>
             <h2 className="text-3xl font-bold text-gray-900 text-center">
-            Good to have you here, {user.first_name}!
+              Good to have you here, {user.first_name}!
             </h2>
             <p className="text-lg text-gray-500 mt-2 text-center">
-            Take a look at your current activities and progress.
+              Take a look at your current activities and progress.
             </p>
           </div>
           <div>
@@ -253,11 +258,9 @@ const Dashboard = () => {
           {likedSubjects.length > 0 ? (
             likedSubjects.map((subject, index) => {
               const quizButtonColors = [
-
                 "bg-cyan-500 hover:bg-blue-700 text-white",
                 "bg-sky-500 hover:bg-blue-700 text-white",
               ];
-
 
               const quizButtonColor =
                 quizButtonColors[index % quizButtonColors.length];
@@ -296,11 +299,7 @@ const Dashboard = () => {
                       Take a quiz!
                     </button>
                     <button
-                      onClick={() =>
-                        navigate("/ai-teacher", {
-                          state: { subject: subject.name },
-                        })
-                      }
+                      onClick={() => handleAiTeacherClick(subject.name)} // Show Chattbot on AI Teacher click
                       className="w-full bg-gray-100 text-gray-700 py-3 rounded-lg hover:bg-gray-200 transition"
                     >
                       AI Teacher
@@ -311,23 +310,43 @@ const Dashboard = () => {
             })
           ) : (
             <p className="text-xl text-black w-full font-semibold">
-              Start your learning journey! 
+              Start your learning journey!
             </p>
           )}
         </section>
 
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-auto">
-      <LoginStreak user={user} />
-      <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-        <h3 className="text-xl font-semibold text-gray-700 mb-4">Your Progress Overview</h3>
-        <p className="text-lg text-gray-500">How you're doing in {likedSubjects[0]?.name}</p>
-        <p className="text-3xl font-bold text-yellow-600 mt-2">0%</p>
-        <div className="w-full h-32 bg-gray-100 rounded-lg flex items-center justify-center mt-4">
-          <p className="text-gray-500">Progress Graph Placeholder</p>
-        </div>
-      </div>
-    </section>
+          <LoginStreak user={user} />
+          <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+            <h3 className="text-xl font-semibold text-gray-700 mb-4">
+              Your Progress Overview
+            </h3>
+            <p className="text-lg text-gray-500">
+              How you're doing in {likedSubjects[0]?.name}
+            </p>
+            <p className="text-3xl font-bold text-yellow-600 mt-2">0%</p>
+            <div className="w-full h-32 bg-gray-100 rounded-lg flex items-center justify-center mt-4">
+              <p className="text-gray-500">Progress Graph Placeholder</p>
+            </div>
+          </div>
+        </section>
       </main>
+      {/* Chattbot Sliding in from the right */}
+      <div
+        className={`fixed top-0 right-0 h-full w-1/5 bg-white shadow-lg transition-transform duration-300 ${
+          showChattbot ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <div className="flex justify-end p-4">
+          <button
+            className="text-red-600 font-bold"
+            onClick={handleCloseChattbot}
+          >
+            Close
+          </button>
+        </div>
+        <Chattbot />
+      </div>
     </div>
   );
 };
