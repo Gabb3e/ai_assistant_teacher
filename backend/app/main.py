@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy import select, update, delete, insert
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Annotated
-from models.models import ChatRequest, ChatResponse, QuizModel, QuizQuestionModel, User, Base
+from models.models import ChatRequest, ChatResponse, QuizModel, QuizQuestionModel, User, Base, Subject
 from schemas.schemas import ChatRequestModel, ChatResponseModel, QuizCreateResponseModel, QuizCreateRequestModel, QuestionModel, UserCreate, UserBase
 from openai import OpenAI
 from auth_endpoints import auth_router
@@ -18,17 +18,7 @@ import os
 import re
 import json
 
-# from app.auth import get_current_user  # Assuming you have an auth dependency
-
-# uvicorn app.main:app --reload
-
-# Dependency to load API key from environment variables
-
-# origin = [
-#     "http://localhost:3000/",
-#     "http://localhost:5173/",
-#     "http://localhost:8000/"
-# ]
+# uvicorn main:app --reload
 
 
 @asynccontextmanager
@@ -65,62 +55,110 @@ def load_api_key() -> str:
     return api_key
 
 
-def extract_json_from_response(ai_response: str):
+def extract_json_from_response(ai_response: str) -> str:
     """
     Attempts to extract the JSON-like part of the AI response using regular expressions.
     This function looks for the first valid JSON array in the response.
     """
-    # Regular expression to extract JSON array starting with '[' and ending with ']'
-    match = re.search(r'(\[.*\])', ai_response, re.DOTALL)
+    # Regular expression to match the first JSON array in the response
+    match = re.search(r'(\[\s*\{.*?\}\s*\])', ai_response, re.DOTALL)
     if match:
         return match.group(1)  # Return the matched JSON content
     else:
         print("No valid JSON array found in the AI response.")
         return None
 
-
-def parse_quiz_response(ai_response: str):
+def parse_quiz_response_ray(ai_response: str):
     """
-    Parse the AI response to extract questions, each with 'question', 'options', and 'correct_answer'.
-    This function tries to extract the JSON part from the response first.
+    Parse the AI response to extract questions, ensuring it's valid JSON.
     """
     try:
-        # Extract JSON from AI response if possible
+        # Clean up response by stripping extra characters like newlines and spaces
+        ai_response = ai_response.strip()
+
+        # Print response for debugging
+        print(f"Cleaned AI Response: {ai_response}")
+
+        # Attempt to parse the cleaned AI response directly as JSON
+        quiz_data = json.loads(ai_response)
+
+        if not isinstance(quiz_data, list):
+            print("Extracted JSON is not a valid list of questions.")
+            return []
+
+        parsed_questions = []
+        for question in quiz_data:
+            # Ensure all required keys are present
+            if 'question' not in question or 'options' not in question or 'correct_answer' not in question or 'explanation' not in question:
+                print(f"Invalid question structure or missing fields: {question}")
+                raise ValueError("Question is missing necessary fields ('question', 'options', 'correct_answer', 'explanation').")
+
+            # Append the parsed question, including explanation, to the list
+            parsed_questions.append({
+                'question': question['question'],
+                'options': question['options'],
+                'correct_answer': question['correct_answer'],
+                'explanation': question['explanation']  # Include the explanation in the response
+            })
+
+        print("Parsed questions successfully.")
+        return parsed_questions
+
+    except json.JSONDecodeError as e:
+        print(f"Failed to parse AI response. JSONDecodeError: {e}")
+        return []
+
+    except ValueError as e:
+        print(f"Error in quiz structure: {e}")
+        return []
+
+
+def parse_quiz_response(ai_response: str) -> List[Dict[str, Any]]:
+    """
+    Parse the AI response to extract quiz questions and answers.
+    Ensures the AI response is valid JSON and properly formatted.
+    """
+    try:
+        # Step 1: Remove the code block formatting, if present
+        ai_response = ai_response.strip()  # Remove leading/trailing whitespace
+        if ai_response.startswith("```json"):
+            ai_response = re.sub(r"```json\n|\n```", "", ai_response).strip()
+
+        # Step 2: Extract JSON from AI response
         json_content = extract_json_from_response(ai_response)
         if not json_content:
             print("AI response does not contain valid JSON.")
             return []
 
-        # Attempt to parse the extracted JSON
+        # Step 3: Attempt to parse the extracted JSON content
         quiz_data = json.loads(json_content)
-        questions = quiz_data if isinstance(quiz_data, list) else []
 
+        if not isinstance(quiz_data, list):
+            print("Extracted JSON is not a valid list of questions.")
+            return []
+
+        # Step 4: Validate and structure each quiz question
         parsed_questions = []
-        for question in questions:
-            correct_answer = (
-                question.get('correct_answer') or
-                question.get('answer') or
-                question.get('correctOption') or
-                None
-            )
+        for question in quiz_data:
+            # Ensure all required keys are present
+            if 'question' not in question or 'options' not in question or 'correct_answer' not in question or 'explanation' not in question:
+                print(f"Invalid question structure or missing fields: {question}")
+                raise ValueError("Question is missing necessary fields ('question', 'options', 'correct_answer', 'explanation').")
 
-            # Ensure we have the correct answer and required keys
-            if not correct_answer or 'question' not in question or 'options' not in question:
-                print(
-                    f"Invalid question structure or missing answer: {question}")
-                raise ValueError(
-                    "Question is missing necessary fields or correct answer.")
-
+            # Append each valid question to the parsed list
             parsed_questions.append({
                 'question': question['question'],
                 'options': question['options'],
-                'correct_answer': correct_answer
+                'correct_answer': question['correct_answer'],
+                'explanation': question['explanation']
             })
 
+        # Step 5: Return the list of parsed quiz questions
+        print("Parsed questions successfully.")
         return parsed_questions
 
-    except json.JSONDecodeError:
-        print("Failed to parse extracted JSON. It was not valid.")
+    except json.JSONDecodeError as e:
+        print(f"Failed to parse AI response. JSONDecodeError: {e}")
         return []
 
     except ValueError as e:
@@ -193,11 +231,17 @@ async def create_quiz(
     api_key: str = Depends(load_api_key),
 ):
     try:
+        # Validate number of questions
+        if request.num_questions < 1 or request.num_questions > 50:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Number of questions must be between 1 and 50.")
+
+
         prompt = (
-            f"Create a quiz on the topic of '{request.topic}' with {request.num_questions} questions."
-            " Each question should have four distinct answer options."
-            " Mark one correct answer for each question."
-            " Respond in valid JSON format, with each question structured as an object containing 'question', 'options', and 'correct_answer'."
+        f"Please create a quiz in the subject area '{request.subject}', focusing specifically on the topic '{request.topic}', with {request.num_questions} questions."
+        " Each question should have four distinct answer options."
+        " Mark one correct answer for each question."
+        " Provide a brief explanation for why the correct answer is correct."
+        " Respond in valid JSON format, with each question structured as an object containing 'question', 'options', 'correct_answer', and 'explanation'."
         )
 
         if request.difficulty:
@@ -205,10 +249,14 @@ async def create_quiz(
 
         # Add more guidance to ensure the AI provides as much detail as possible.
         prompt += (
-            " Ensure that the response is formatted as a JSON array of questions. Each question should be an object with keys: "
-            "'question' (string), 'options' (array of strings), and 'correct_answer' (string)."
-            " Example: [{'question': 'What is 2 + 2?', 'options': ['3', '4', '5', '6'], 'correct_answer': '4'}]."
-            " Return only valid JSON with no additional explanations or text."
+        " Ensure that the response is formatted as a JSON array of questions. Each question should be an object with the following keys: "
+        "'question' (string), 'options' (array of four strings), 'correct_answer' (string), and 'explanation' (string)."
+        " The 'explanation' field should clearly explain in a few words why the correct answer is right."
+        " Example: "
+        " [{'question': 'What is 2 + 2?', 'options': ['3', '4', '5', '6'], 'correct_answer': '4', 'explanation': '2 + 2 equals 4 because adding two sets of two results in four.'}]."
+        " Another example: "
+        " [{'question': 'What is the capital of France?', 'options': ['Berlin', 'Madrid', 'Paris', 'Rome'], 'correct_answer': 'Paris', 'explanation': 'Paris is the capital of France, known for its history, culture, and landmarks like the Eiffel Tower.'}]."
+        " Return only valid JSON with no additional text outside the JSON structure."
         )
 
         # Logging the final prompt

@@ -6,6 +6,7 @@ import LoadingPage from "./LoadingPage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import Chattbot from './components/chattbot/chattbot';
+import LoadingBar from "./components/Loading";
 
 
 const Dashboard = () => {
@@ -86,7 +87,8 @@ const Dashboard = () => {
   if (!user) {
     return (
       <div>
-        <LoadingPage />
+        {/* <LoadingPage /> */}
+        <LoadingBar text="Loading Dashboard..."/>
       </div>
     );
   }

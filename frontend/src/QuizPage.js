@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import AppNavbar from './AppNavbar';
+import LoadingBar from './components/Loading';
 
 const QuizPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { topic, questionCount, difficulty } = location.state || {};
+  const {subject, topic, questionCount, difficulty} = location.state || {};
+  const [explanation, setExplanation] = useState([])
+  const [responseData, setResponseData] = useState([])
   const [quizQuestions, setQuizQuestions] = useState([]);
   const [selectedAnswer, setSelectedAnswer] = useState('');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -24,17 +27,21 @@ const QuizPage = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
+            subject,
             topic,
             num_questions: questionCount,
             difficulty,
           }),
         });
-
+  
         if (!response.ok) {
           throw new Error(`Failed to create quiz. Status: ${response.status}`);
         }
-
+  
         const data = await response.json();
+        console.log("This is the response:", data);
+        setResponseData(data)
+        setQuizQuestions(data.questions);
         setQuizId(data.quiz_id);
       } catch (err) {
         console.error('Error creating quiz:', err);
@@ -42,9 +49,9 @@ const QuizPage = () => {
         setLoading(false);
       }
     };
-
+  
     createQuiz();
-  }, [topic, questionCount, difficulty]);
+  }, [subject, topic, questionCount, difficulty]);
 
   useEffect(() => {
     const fetchQuizQuestions = async () => {
@@ -90,7 +97,8 @@ const QuizPage = () => {
 
   const handleFinishQuiz = () => {
     // Navigate to QuizResults and pass quizQuestions and userAnswers
-    navigate('/QuizResults', { state: { quizQuestions, userAnswers, topic, questionCount, difficulty } });
+    navigate('/QuizResults', { state: { explanation: responseData.questions.map(q => q.explanation), // array of explanations
+    quizQuestions, userAnswers, topic, questionCount, difficulty, responseData} });
   };
 
   // If there is an error, display the error message
@@ -100,7 +108,7 @@ const QuizPage = () => {
 
   // Show loading spinner or message while quiz is being fetched
   if (loading) {
-    return <div>Loading quiz...</div>;
+    return <LoadingBar text={"Generating Quiz..."}/>;
   }
 
   // Get the current question
