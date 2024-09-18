@@ -1,27 +1,42 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy.orm import Session
-from typing import List
-from models.models import User, Subject
+from typing import List, Dict, Any
+from models.models import User, user_likes_subject, Subject, Topic
 from db_setup import get_db
-from schemas.schemas import SubjectLikeRequest, SubjectResponse, UserBase, UserCreate
+from schemas.schemas import SubjectLikeRequest, SubjectResponse, UserBase, UserCreate, SubjectLikeRequest
 from security import get_current_user
+from contextlib import asynccontextmanager
+from dotenv import load_dotenv
 import os
-import shutil
-from uuid import uuid4
 
+
+
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()
+    yield
+
+app = FastAPI(lifespan=lifespan)
+load_dotenv()
+
+client = OpenAI()
 user_router = APIRouter(tags=["User"])
 
-# Directory to store profile images
-UPLOAD_DIRECTORY = "./uploaded_profiles"
-
-user_router = APIRouter(tags=["User"])
-
-if not os.path.exists(UPLOAD_DIRECTORY):
-    os.makedirs(UPLOAD_DIRECTORY)
-# POST endpoint to add a new subject to a user's liked subjects
+def load_api_key() -> str:
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+      raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
 
 
+
+    
 @user_router.post("/users/{user_id}/update-profile", status_code=200)
+    """
+    Update user profile information including first name, last name, email, and profile picture.
+    """
 async def update_user_profile(
     user_id: int,
     first_name: str = Form(...),
@@ -32,13 +47,9 @@ async def update_user_profile(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """
-    Update user profile information including first name, last name, email, and profile picture.
-    """
+
     # Ensure the user is updating their own profile
     if current_user.id != user_id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
 
     # Fetch the user from the database
     user = db.query(User).filter(User.id == user_id).first()
@@ -88,7 +99,29 @@ async def add_new_subject(user_id: int, request: SubjectLikeRequest, db: Session
 
     return SubjectResponse(id=subject.id, name=subject.name)
 
-# GET endpoint to retrieve liked subjects by user
+# Endpoint 1: Delete a subject liked by a user
+@user_router.delete("/users/{user_id}/subjects/{subject_id}", status_code=200, tags=["Subjects"])
+async def delete_subject(user_id:int, subject_id: int, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Check if the subject exists
+    subject = db.query(Subject).filter(Subject.id == subject_id).first()
+    if not subject:
+        raise HTTPException(status_code=404, detail="Subject not found")
+    
+    # Check if the subject is in the user's liked subjects
+    if subject  not in user.liked_subjects:
+        raise HTTPException(status_code=404, detail="Subject not found in user's liked subjects")
+    
+    # Remove the subject from the user's liked subjects
+    user.liked_subjects.remove(subject)
+    db.commit()
+
+    return {"message": f"Deleted subject: {subject.name} from user's liked subjects"}
+
+
 
 
 @user_router.get("/users/{user_id}/liked-subjects", response_model=List[SubjectResponse])

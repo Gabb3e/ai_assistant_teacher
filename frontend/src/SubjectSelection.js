@@ -110,8 +110,8 @@ const SubjectSelection = () => {
           {!isCustomInputVisible ? (
             <button
               onClick={handleAddCustomSubject}
-              className={`border border-gray-300 p-4 rounded-lg text-black hover:bg-gray-100 transition duration-300 ${
-                selectedSubject === 'custom' ? 'bg-blue-600 text-white' : ''
+              className={`border border-gray-300 p-4 rounded-lg text-black hover:bg-gray-100 transition duration-200 ${
+                selectedSubject === 'custom' ? 'bg-blue-600 text-white hover:text-black' : ''
               }`}
             >
               Add your own +
@@ -127,10 +127,10 @@ const SubjectSelection = () => {
           )}
         </div>
         <div className="flex justify-between">
-          <button onClick={handleBack} className="bg-red-300 text-white py-2 px-9 rounded-lg">
+          <button onClick={handleBack} className=" text-black py-2 px-9 rounded-lg hover:bg-gray-100">
             Back
           </button>
-          <button onClick={handleContinue} className="bg-blue-600 text-white py-2 px-6 rounded-lg">
+          <button onClick={handleContinue} className="text-white py-2 px-6 rounded-lg bg-gray-800 hover:bg-blue-900 transition duration-300">
             Continue →
           </button>
         </div>

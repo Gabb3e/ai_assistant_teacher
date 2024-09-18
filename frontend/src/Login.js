@@ -76,7 +76,7 @@ const Login = () => {
             alt="Login Illustration" 
             className="max-w-sm mx-auto rounded-lg shadow-lg"
           />
-          <h2 className="text-4xl font-bold text-gray-800 mt-10">Welcome Back!</h2>
+          <h2 className="text-4xl font-bold text-gray-800 mt-10 text-center">Welcome Back!</h2>
           <p className="text-lg text-gray-600 mt-4">
             Continue your learning journey and achieve your goals with Study Assistant.
           </p>

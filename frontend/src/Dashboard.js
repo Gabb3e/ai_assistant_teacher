@@ -2,6 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "./components/SideBar";
 import LoginStreak from "./components/LoginStreak";
+import LoadingPage from "./LoadingPage";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import Chattbot from './components/chattbot/chattbot';
+
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -44,6 +49,7 @@ const Dashboard = () => {
       setToken(storedToken); // Store the token in the state
       if (!storedToken) {
         console.log("No token found");
+        navigate("/login"); // Redirect to login if no token is found
         return;
       }
 
@@ -90,6 +96,19 @@ const Dashboard = () => {
     fetchUser();
   }, [navigate]);
 
+  // Handle error state
+  if (error) {
+    return <div>{error}</div>;
+  }
+
+  if (!user) {
+    return (
+      <div>
+        <LoadingPage />
+      </div>
+    );
+  }
+
   const goToTopicSelection = () => {
     navigate("/TopicSelection"); // Navigate to the TopicSelection page
   };
@@ -135,6 +154,38 @@ const Dashboard = () => {
     }
   };
 
+  const handleDeleteSubject = async (subjectId) => {
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/users/${user.id}/subjects/${subjectId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setSuccess(`Subject "${data.message}" deleted successfully!`);
+        setError(null);
+        fetchLikedSubjects(user.id); // Refresh liked subjects after deletion
+        // Automatically close any modal or cleanup actions after success (if needed)
+        setTimeout(() => {
+          setSuccess(null); // Clear success message after some time
+        }, 1000); // Optional delay for better user experience
+      } else {
+        const errorData = await response.json();
+        setError(errorData.detail || "Failed to delete subject.");
+        setSuccess(null);
+      }
+    } catch (err) {
+      setError("An error occurred while deleting the subject.");
+      setSuccess(null);
+    }
+  };
+
   const closeModal = () => {
     setIsModalOpen(false);
     setError(null); // Clear error message when modal is closed
@@ -162,20 +213,20 @@ const Dashboard = () => {
       <main className="flex-1 p-8">
         <header className="flex justify-between items-center mb-12">
           <div>
-            <h2 className="text-4xl font-bold text-gray-900">
-              Hello, {user.first_name}!
+            <h2 className="text-3xl font-bold text-gray-900 text-center">
+            Good to have you here, {user.first_name}!
             </h2>
-            <p className="text-lg text-gray-500 mt-2">
-              Here's a quick overview of your progress.
+            <p className="text-lg text-gray-500 mt-2 text-center">
+            Take a look at your current activities and progress.
             </p>
           </div>
           <div>
             {/* Button to open modal */}
             <button
               onClick={() => setIsModalOpen(true)} // Show modal when clicked
-              className="bg-gray-900 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition"
+              className="bg-gray-800 text-white font-bold py-3 px-3 rounded-lg hover:bg-blue-700 transition"
             >
-              Add New Subject
+              Explore a New Subject
             </button>
           </div>
         </header>
@@ -183,7 +234,7 @@ const Dashboard = () => {
         {/* Modal */}
         {isModalOpen && (
           <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
               <h3 className="text-2xl font-bold mb-4">Add New Subject</h3>
 
               <input
@@ -224,9 +275,11 @@ const Dashboard = () => {
           {likedSubjects.length > 0 ? (
             likedSubjects.map((subject, index) => {
               const quizButtonColors = [
+
                 "bg-cyan-500 hover:bg-blue-700 text-white",
                 "bg-sky-500 hover:bg-blue-700 text-white",
               ];
+
 
               const quizButtonColor =
                 quizButtonColors[index % quizButtonColors.length];
@@ -240,7 +293,18 @@ const Dashboard = () => {
                     <h3 className="text-2xl font-semibold text-slate-900 rounded-lg px-2">
                       {subject.name}
                     </h3>
-                    <span className="text-gray-400 text-sm"></span>
+                    <span>
+                      {" "}
+                      <button
+                        onClick={() => handleDeleteSubject(subject.id)}
+                        className=" w-4/12 bg-white text-gray-700 py-3 rounded-lg flex justify-center items-center"
+                      >
+                        <FontAwesomeIcon
+                          icon={faTrash}
+                          className="text-gray-900 hover:text-red-500"
+                        />
+                      </button>
+                    </span>
                   </div>
                   <div className="space-y-4">
                     <button
@@ -263,81 +327,31 @@ const Dashboard = () => {
                     >
                       AI Teacher
                     </button>
-                    <button
-                      onClick={async () => {
-                        try {
-                          const response = await fetch(
-                            `http://127.0.0.1:8000/users/${user.id}/remove-subject`,
-                            {
-                              method: "DELETE",
-                              headers: {
-                                "Content-Type": "application/json",
-                                Authorization: `Bearer ${token}`,
-                              },
-                              body: JSON.stringify({
-                                subject_name: subject.name,
-                              }),
-                            }
-                          );
-                          if (response.ok) {
-                            fetchLikedSubjects(user.id);
-                          } else {
-                            const errorData = await response.json();
-                            setError(
-                              errorData.detail || "Failed to remove subject."
-                            );
-                          }
-                        } catch (err) {
-                          setError(
-                            "An error occurred while removing the subject."
-                          );
-                        }
-                      }}
-                      className="w-full bg-white text-gray-700 py-3 rounded-lg hover:bg-gray-200 transition"
-                    >
-                      Remove Subject
-                    </button>
                   </div>
                 </div>
               );
             })
           ) : (
-            <p className="text-lg text-gray-500">
-              No subjects liked yet. Start by adding a new subject.
+            <p className="text-xl text-black w-full font-semibold">
+              Start your learning journey! 
             </p>
           )}
         </section>
 
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-          <LoginStreak user={user} />
-
-          <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-            <h3 className="text-xl font-semibold text-gray-700 mb-4">
-              Quiz Progress
-            </h3>
-            <p className="text-lg text-gray-500">Maths Quiz</p>
-            <p className="text-3xl font-bold text-yellow-600 mt-2">80%</p>
-            <div className="w-full h-32 bg-gray-100 rounded-lg flex items-center justify-center mt-4">
-              <p className="text-gray-500">Progress Graph Placeholder</p>
-            </div>
-          </div>
-        </section>
-
-        {/* Display the subjects chosen during onboarding */}
-        <section>
-          <h3 className="text-2xl font-bold mb-4">Subjects you chose during onboarding:</h3>
-          <ul>
-            {onboardingSubjects.length > 0 ? (
-              onboardingSubjects.map((subject, index) => (
-                <li key={index} className="text-xl text-gray-700">{subject}</li>
-              ))
-            ) : (
-              <p>You haven't chosen any subjects yet.</p>
-            )}
-          </ul>
-        </section>
-
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-auto">
+      <LoginStreak user={user} />
+      <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+        <h3 className="text-xl font-semibold text-gray-700 mb-4">Your Progress Overview</h3>
+        <p className="text-lg text-gray-500">How you're doing in {likedSubjects[0]?.name}</p>
+        <p className="text-3xl font-bold text-yellow-600 mt-2">0%</p>
+        <div className="w-full h-32 bg-gray-100 rounded-lg flex items-center justify-center mt-4">
+          <p className="text-gray-500">Progress Graph Placeholder</p>
+        </div>
+      </div>
+    </section>
       </main>
     </div>
-  ); }
-  export default Dashboard;
+  );
+};
+
+export default Dashboard;

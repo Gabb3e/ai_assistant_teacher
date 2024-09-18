@@ -115,7 +115,7 @@ const TopicSelection = () => {
                 <button
                   key={index}
                   onClick={() => handleTopicSelect(topic)}
-                  className={`border border-gray-300 p-4 rounded-lg text-black hover:bg-blue-800 hover:text-white transition duration-300 font-medium ${
+                  className={`border border-gray-300 p-4 rounded-lg text-black hover:bg-blue-800 hover:text-white transition duration-300 font-normal ${
                     selectedTopic === topic ? 'bg-blue-600 text-white' : ''
                   }`}
                 >
