@@ -52,7 +52,7 @@ const KnowledgeLevel = () => {
         <div className="grid grid-cols-3 gap-4 mb-8">
           <button
             onClick={() => handleLevelSelect('Beginner')}
-            className={`border border-gray-300 p-4 rounded-lg text-black hover:bg-blue-800 hover:text-white font-semibold ${
+            className={`border border-gray-300 p-4 rounded-lg text-black hover:bg-blue-800 hover:text-white font-medium ${
               selectedLevel === 'Beginner' ? 'bg-blue-600 text-white' : ''
             }`}
           >
@@ -60,7 +60,7 @@ const KnowledgeLevel = () => {
           </button>
           <button
             onClick={() => handleLevelSelect('Intermediate')}
-            className={`border border-gray-300 p-4 rounded-lg text-black font-semibold hover:bg-blue-800 hover:text-white ${
+            className={`border border-gray-300 p-4 rounded-lg text-black font-medium hover:bg-blue-800 hover:text-white ${
               selectedLevel === 'Intermediate' ? 'bg-blue-600 text-white' : ''
             }`}
           >
@@ -68,7 +68,7 @@ const KnowledgeLevel = () => {
           </button>
           <button
             onClick={() => handleLevelSelect('Advanced')}
-            className={`border border-gray-300 p-4 rounded-lg text-black font-semibold hover:bg-blue-800 hover:text-white ${
+            className={`border border-gray-300 p-4 rounded-lg text-black font-medium hover:bg-blue-800 hover:text-white ${
               selectedLevel === 'Advanced' ? 'bg-blue-600 text-white' : ''
             }`}
           >
