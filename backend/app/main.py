@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, status, Request, Query
+from fastapi import FastAPI, HTTPException, Depends, status, Request, Query, File, UploadFile
 from db_setup import init_db, get_db, engine
 from contextlib import asynccontextmanager
 from sqlalchemy.orm import Session, joinedload, selectinload
@@ -17,6 +17,8 @@ from uuid import uuid4
 import os
 import re
 import json
+import shutil
+import openai
 
 # uvicorn main:app --reload
 
@@ -442,5 +444,50 @@ async def get_users(id: int, db: Session = Depends(get_db)):
     if not result:
         return HTTPException(status_code=404, detail="User not found")
     return {"users": "Successfully fetched users."}
+
+
+
+@app.post("/voice-assistant/", tags=["Voice Assistant"])
+async def handle_voice_assistant(file: UploadFile = File(...)):
+    try:
+        # Save the uploaded file to a local directory
+        upload_dir = "uploads"
+        if not os.path.exists(upload_dir):
+            os.makedirs(upload_dir)
+
+        file_location = f"{upload_dir}/{file.filename}"
+        
+        # Log the file location for debugging
+        print(f"Saving file to: {file_location}")
+        
+        with open(file_location, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        # Log the file saved
+        print(f"File saved at {file_location}")
+
+        # Use OpenAI Whisper API to transcribe the audio file
+        with open(file_location, "rb") as audio_file:
+            print("Sending audio to OpenAI Whisper API...")
+            transcription = openai.Audio.transcribe(
+                model="whisper-1",
+                file=audio_file,
+                response_format="text"
+            )
+        
+        # Clean up file after processing
+        if os.path.exists(file_location):
+            os.remove(file_location)
+            print(f"File {file_location} deleted after processing.")
+        else:
+            print(f"File {file_location} not found for deletion.")
+
+        # Return the AI response (transcription text)
+        return {"ai_response": transcription}
+
+    except Exception as e:
+        # Log the exact error for debugging
+        print(f"Error occurred: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error processing voice input: {str(e)}")
 
 
