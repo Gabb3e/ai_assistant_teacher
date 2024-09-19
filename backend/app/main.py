@@ -446,6 +446,7 @@ async def get_users(id: int, db: Session = Depends(get_db)):
     return {"users": "Successfully fetched users."}
 
 
+
 @app.post("/voice-assistant/", tags=["Voice Assistant"])
 async def handle_voice_assistant(file: UploadFile = File(...)):
     try:

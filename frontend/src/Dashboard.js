@@ -258,7 +258,8 @@ const Dashboard = () => {
           {likedSubjects.length > 0 ? (
             likedSubjects.map((subject, index) => {
               const quizButtonColors = [
-                "bg-cyan-500 hover:bg-blue-700 text-white",
+
+                "bg-sky-600 hover:bg-blue-700 text-white",
                 "bg-sky-500 hover:bg-blue-700 text-white",
               ];
 
