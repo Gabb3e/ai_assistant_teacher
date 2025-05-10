@@ -4,6 +4,7 @@ import Sidebar from "./components/SideBar";
 import LoginStreak from "./components/LoginStreak";
 import LoadingPage from "./LoadingPage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import Chattbot from "./components/chattbot/chattbot";
 import LoadingBar from "./components/Loading";
