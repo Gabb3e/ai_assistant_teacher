@@ -19,7 +19,7 @@ const LoadingPage = () => {
         alt="My Icon"
         className="w-12 h-12 animate-spin rounded-full mr-2 bg-gray-900" // Tailwind classes for width and height
       />Loading... </h1>
-            
+           
         </div>
         </div>
     );
